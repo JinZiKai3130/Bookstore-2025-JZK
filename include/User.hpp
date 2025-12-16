@@ -1,12 +1,14 @@
 #pragma once
 #include <cstring>
+#include "BlockStorage.h"
+#include <vector>
 
 struct Users {
     char UserID[31];
     char Password[31];
     char username[31];
     int privilege;
-
+    
     Users() {
         UserID[0] = '\0';
         Password[0] = '\0';
@@ -45,3 +47,23 @@ struct Users {
     }
 };
 
+class UserManager {
+private:
+    BlockStorageSystem<Users> user_storage;
+    std::vector<Users> user_stack;
+    // User& find_user(const char* id);
+    bool check_priv(int priv);
+    bool check_id(const char* str);
+    bool check_name(const char* str);
+public:
+    UserManager();
+    void useradd(const char* id, const char* pwd, int priv, const char* name, int your_priv);
+    void userdelete(const char* id, int your_priv);
+    std::vector<Users> search_users(const std::string& id);
+    void login(const int priv, const char* id, const char* pwd);
+    void logout();
+    void regist(const char* id, const char* pwd, const char* name);
+    void change_pwd(const char* id, const char* pre_pwd, const char* new_pwd, int your_priv);
+};
+
+#endif
