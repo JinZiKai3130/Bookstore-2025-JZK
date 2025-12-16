@@ -7,12 +7,14 @@ struct Users {
     char UserID[31];
     char Password[31];
     char username[31];
+    char selected_book[21];
     int privilege;
     
     Users() {
         UserID[0] = '\0';
         Password[0] = '\0';
         username[0] = '\0';
+        selected_book[0] = '\0';
         privilege = 0;
     }
 
@@ -23,6 +25,7 @@ struct Users {
         Password[30] = '\0';
         std::strncpy(username, name, 30);
         username[30] = '\0';
+        selected_book[0] = '\0';
         privilege = priv;
     }
 
@@ -64,6 +67,7 @@ public:
     void logout();
     void regist(const char* id, const char* pwd, const char* name);
     void change_pwd(const char* id, const char* pre_pwd, const char* new_pwd, int your_priv);
+    void select_book(const char* id);
 };
 
 #endif

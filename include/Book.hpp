@@ -3,6 +3,8 @@
 
 #include <cstring>
 #include <string>
+#include <vector>
+using namespace vector;
 
 // ISBN-Book映射
 struct Book {
@@ -59,5 +61,25 @@ struct Book {
         return std::strcmp(ISBN, other.ISBN) < 0;
     }
 };
+
+class BookManager {
+    BlockStorageSystem<Book> book_storage;
+    BlockStorageSystem<char*> name_isbn;
+    BlockStorageSystem<char*> author_isbn;
+    BlockStorageSystem<char*> keyword_isbn;
+
+public:
+    BookManager();
+    vector<char*> f_by_name(const char* name);
+    vector<char*> f_by_author(const char* author);
+    vector<char*> f_by_keyword(const char* keyword);
+    vector<Book> f_by_isbn(const char* isbn);
+    void buy(const char* isbn, const int& num);
+    void select(const char* isbn);
+    void modify(); //??????怎么做比较好
+    void impt(const int& num, const double& tot_cost);
+};
+
+
 
 #endif // BOOK_H

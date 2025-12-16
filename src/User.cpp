@@ -1,4 +1,4 @@
-#include "UserManager.h"
+#include "User.h"
 
 UserManager::UserManager() 
     : user_storage("Bookstore_Users") {  // 拼接路径：./data/Bookstore_Users
