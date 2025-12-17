@@ -150,3 +150,7 @@ void UserManager::change_pwd(const char* id, const char* pre_pwd, const char* ne
     UserManager::userdelete(id, 7);
     UserManager::useradd(id, new_pwd, cur_user[0].privilege, cur_user[0].name, 7);
 }
+
+void UserManager::select_book(const char* isbn) {
+    strcpy(user_stack.back().selected_book, isbn);
+}

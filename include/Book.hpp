@@ -5,13 +5,14 @@
 #include <string>
 #include <vector>
 using namespace vector;
+using namespace string;
 
 // ISBN-Book映射
 struct Book {
     char ISBN[21];
     char name[61];
     char author[61];
-    char keyword[61];
+    vector<std::string> keyword;
     double price;
     int quantity;
 
@@ -28,7 +29,7 @@ struct Book {
     Book(const char* new_ISBN,
          const char* new_name,
          const char* new_author,
-         const char* new_keyword,
+         const vector<string>& new_keyword,
          const double& new_price,
          const int& new_quantity) {
         std::strncpy(ISBN, new_ISBN, 20);
@@ -37,8 +38,7 @@ struct Book {
         name[60] = '\0';
         std::strncpy(author, new_author, 60);
         author[60] = '\0';
-        std::strncpy(keyword, new_keyword, 60);
-        key_word[60] = '\0';
+        keyword = new_keyword;
         price = new_price;
         quantity = new_quantity;
     }
@@ -47,7 +47,7 @@ struct Book {
         std::strncpy(ISBN, other.ISBN, 20); ISBN[20] = '\0';
         std::strncpy(name, other.name, 60); name[60] = '\0';
         std::strncpy(author, other.author, 60); author[60] = '\0';
-        std::strncpy(keyword, other.keyword, 60); keyword[60] = '\0';
+        keyword = other.keyword;
         price = other.price;
         quantity = other.quantity;
         return *this;
@@ -70,16 +70,24 @@ class BookManager {
 
 public:
     BookManager();
-    vector<char*> f_by_name(const char* name);
-    vector<char*> f_by_author(const char* author);
-    vector<char*> f_by_keyword(const char* keyword);
-    vector<Book> f_by_isbn(const char* isbn);
-    void buy(const char* isbn, const int& num);
+    vector<char*>& f_by_name(const char* name);
+    vector<char*>& f_by_author(const char* author);
+    vector<char*>& f_by_keyword(const char* keywords);
+    vector<Book>& f_by_isbn(const char* isbn);
+    void buy(const char* isbn, const string& num);
     void select(const char* isbn);
-    void modify(); //??????怎么做比较好
+    void insert(const char* isbn, const char* name,
+                const char* author, const vector<string>& keywords,
+                const double& pric, const int& num);
+    void dele(const char* isbn);
     void impt(const int& num, const double& tot_cost);
+    vector<string> parse_keywords(const string& keyword_str);
+    bool check_isbn(const char* isbn);
+    bool check_name(const char* name);
+    bool check_keywords(const vector<string>& kwd);
+    bool check_price(const string& pric);
+    void show(const string& str);
+    void modify(const string& str);
 };
-
-
 
 #endif // BOOK_H

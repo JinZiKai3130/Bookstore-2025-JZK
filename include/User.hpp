@@ -67,7 +67,7 @@ public:
     void logout();
     void regist(const char* id, const char* pwd, const char* name);
     void change_pwd(const char* id, const char* pre_pwd, const char* new_pwd, int your_priv);
-    void select_book(const char* id);
+    void select_book(const char* isbn);
 };
 
 #endif
