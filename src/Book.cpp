@@ -58,7 +58,7 @@ void BookManager::select(const char* isbn) {
     Book new_book();
     if (!check_isbn(isbn)) throw("Invalid\n");
     
-    strcpy(new_book.ISBN, isbn);
+    strncpy(new_book.ISBN, isbn);
     insert(new_book);
 }
 
@@ -327,7 +327,7 @@ void BookManager::modify(const string& str, const string& selected_isbn) {
                 if (new_isbn == selected_isbn) {
                     throw("Invalid\n");
                 }
-                strcpy(selected_book.ISBN, new_isbn.c_str());
+                strncpy(selected_book.ISBN, new_isbn.c_str());
                 dele(selected_isbn);
                 insert(selected_book);
 
@@ -339,7 +339,7 @@ void BookManager::modify(const string& str, const string& selected_isbn) {
                     throw("Invalid\n");
                 }
                 string new_name = substr(pos + 1);
-                strcpy(selected_book.name, new_name.c_str());
+                strncpy(selected_book.name, new_name.c_str());
                 dele(selected_isbn);
                 insert(selected_book);
 
@@ -350,7 +350,7 @@ void BookManager::modify(const string& str, const string& selected_isbn) {
                     throw("Invalid\n");
                 }
                 string new_author = substr(pos + 1);
-                strcpy(selected_book.name, new_author.c_str());
+                strncpy(selected_book.name, new_author.c_str());
                 dele(selected_isbn);
                 insert(selected_book);
                 
