@@ -20,7 +20,6 @@ struct Book {
         ISBN[0] = '\0';
         name[0] = '\0';
         author[0] = '\0';
-        keyword[0] = '\0';
         price = 0.00;
         quantity = 0;
         
@@ -59,6 +58,14 @@ struct Book {
     
     bool operator<(const Book& other) const {
         return std::strcmp(ISBN, other.ISBN) < 0;
+    }
+
+    void print() {
+        std::cout << ISBN << "\t" << name <<"\t" << author << "\t";
+        for (const auto& word : keyword) {
+            std::cout << word << "\t";
+        }
+        std::cout << price << "\t" << quantity << "\n";
     }
 };
 

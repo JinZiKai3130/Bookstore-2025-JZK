@@ -62,12 +62,13 @@ public:
     UserManager();
     void useradd(const char* id, const char* pwd, int priv, const char* name, int your_priv);
     void userdelete(const char* id, int your_priv);
-    std::vector<Users> search_users(const std::string& id);
-    void login(const int priv, const char* id, const char* pwd);
+    std::vector<Users>& search_users(const char* id);
+    void login(const char* id, const char* pwd = "");
     void logout();
     void regist(const char* id, const char* pwd, const char* name);
-    void change_pwd(const char* id, const char* pre_pwd, const char* new_pwd, int your_priv);
+    void change_pwd(const char* id, const char* pre_pwd, const char* new_pwd = "", int your_priv);
     void select_book(const char* isbn);
+    char* get_select();
 };
 
 #endif

@@ -7,6 +7,7 @@
 #include <cstring>
 #include <algorithm>
 #include <string>
+#include "Book.hpp"
 
 using std::string;
 using std::fstream;
@@ -297,6 +298,27 @@ public:
         }
         std::sort(results.begin(), results.end());
         return results;
+    }
+
+    void traverse_all() {
+        if (first_block_ptr == -1) {
+            std::cout << '\n';
+            return;
+        }
+        long current = first_block_ptr;
+        int total_elements = 0;
+        int block_count = 0;
+    
+        while (current != -1) {
+            StorageBlock<T> curr_block;
+            read_storage_block(current, curr_block);
+            for (int i = 0; i < curr_block.element_count; ++i) {
+                curr_block.value_storage[i].print();
+            }
+            total_elements += curr_block.element_count;
+            block_count++;
+            current = curr_block.next_block_ptr;
+        }
     }
 };
 

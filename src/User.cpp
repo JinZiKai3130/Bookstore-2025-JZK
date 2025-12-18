@@ -92,17 +92,22 @@ void UserManager::userdelete(const char* id, int your_priv) {
     }
 }
 
-std::vector<Users> UserManager::finduser(const char* id) {
+std::vector<Users>& UserManager::finduser(const char* id) {
     return user_storage.search_data(id);
 }
 
-void UserManager::login(const int your_priv, const char* id, const char* pwd) {
+void UserManager::login(const char* id, const char* pwd = "") {
+    int your_priv;
+    (user_stack.empty()) ? (yout_priv = 0) :(your_priv = user_stack.back().privilege);
     if (your_priv >= 0) {
         std::vector<Users> cur_user = user_storage.search_data(id);
         if (cur_user.empty()) { // 没有该用户
             throw("Invalid\n");
         }
-        if (strcmp(pwd, cur_user[0].Password) == 0) {
+        if (your_priv > cur_user[0].privilege) {
+            user_stack.push_back(cur_user);
+        }
+        else if (strcmp(pwd, cur_user[0].Password) == 0) {
             // 成功登录
             user_stack.push_back(cur_user);
         }
@@ -128,7 +133,7 @@ void UserManager::regist(const char* id, const char* pwd, const char* name) {
     UserManager::useradd(id, pwd, 1, name, 3);
 }
 
-void UserManager::change_pwd(const char* id, const char* pre_pwd, const char* new_pwd, int your_priv) {
+void UserManager::change_pwd(const char* id, const char* pre_pwd, const char* new_pwd = "", int your_priv) {
     if (!check_priv(your_priv)) {
         throw("Invalid\n");
     }
@@ -153,4 +158,8 @@ void UserManager::change_pwd(const char* id, const char* pre_pwd, const char* ne
 
 void UserManager::select_book(const char* isbn) {
     strcpy(user_stack.back().selected_book, isbn);
+}
+
+char* UserManager::get_select() {
+    return user_stack.back().selected_book;
 }

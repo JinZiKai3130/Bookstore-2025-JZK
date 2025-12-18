@@ -50,7 +50,8 @@ void BookManager::buy(const char* isbn, const std::string& num) {
 }
 
 void BookManager::select(const char* isbn) {
-    user_stack.back().select_book(isbn);
+    // UserManager::select_book(isbn);
+    // 选中图书计入user在main.cpp中实现
     vector<Book> cur_book = book_storage.search_data(isbn);
     if (!cur_book.empty()) return;
 
@@ -236,9 +237,149 @@ bool BookManager::check_price(const string& pric) {
 }
 
 void BookManager::show(const string& str) {
-    
+    // 假定str已经只有一个搜索条件
+    if (str.empty()) {
+        book_storage.traverse_all();
+    }
+
+    string s;
+    if (str[0] != '-') {
+        throw("Invalid\n");
+    }
+    int pos = 0;
+    for (int i = 1; i < str.length(); i++) {
+        if (str[i] == '=') {pos = i; break;}
+        s += str[i];
+    }
+
+    if (pos == 0 || pos + 1 == str.length()) {
+        throw("Invalid\n");
+    }
+    vector<Book> found_book;
+    vector<string> isbn_of_book;
+    switch(str) {
+        case "ISBN":
+            found_book = f_by_isbn(substr(pos + 1));
+            if (found_book.empty()) {
+                std::cout << '\n';
+            } else {
+                found_book[0].print();
+            }
+            return;
+        case "name":
+            isbn_of_book = f_by_name(substr(pos + 1));
+            break;
+        case "author":
+            isbn_of_book = f_by_author(substr(pos + 1));
+            break;
+        case "keyword":
+            for (int i = pos + 1; i < str.length(); i++) {
+                if (str[i] == '|') {
+                    throw("Invalid\n");
+                }
+            }
+            isbn_of_book = f_by_keyword(substr(pos + 1));
+            break;
+    }
+
+    if (isbn_of_book.empty()) {
+        std::cout << '\n';
+        return;
+    }
+
+    for (int i = 0; i < isbn_of_book; i++) {
+        found_book = f_by_isbn(isbn_of_book[i]);
+        found_book[0].print();
+        found_book.clear();
+    }
 }
 
-void BookManager::modify(const string& str) {
+void BookManager::modify(const string& str, const string& selected_isbn) {
+    std::istringstream iss(str);
+    std::string parameter;
+    // 未选中放在外面判断
+    vector<Book> tmp = f_by_isbn(selected_isbn);
+    Book selected_book = tmp[0];
 
+    bool vis[5]{};
+    while (iss >> parameter) {
+        if (parameter[0] != '-') {
+            throw("Invalid\n");
+        }
+        
+        int pos = 0;
+        for (int i = 1; i < str.length(); i++) {
+            if (str[i] == '=') {pos = i; break;}
+            s += str[i];
+        }
+
+        if (pos == 0 || pos + 1 == str.length()) {
+            // 没有等号或者参数为空
+            throw("Invalid\n");
+        }
+
+        switch(str) {
+            case "ISBN":
+                if (vis[0]) {
+                    throw("Invalid\n");
+                }
+                string new_isbn = substr(pos + 1);
+                if (new_isbn == selected_isbn) {
+                    throw("Invalid\n");
+                }
+                strcpy(selected_book.ISBN, new_isbn.c_str());
+                dele(selected_isbn);
+                insert(selected_book);
+
+                selected_isbn = new_isbn; // 传回当前用户选择的书
+                vis[0] = true;
+                break;
+            case "name":
+                if (vis[1]) {
+                    throw("Invalid\n");
+                }
+                string new_name = substr(pos + 1);
+                strcpy(selected_book.name, new_name.c_str());
+                dele(selected_isbn);
+                insert(selected_book);
+
+                vis[1] = true;
+                break;
+            case "author":
+                if (vis[2]) {
+                    throw("Invalid\n");
+                }
+                string new_author = substr(pos + 1);
+                strcpy(selected_book.name, new_author.c_str());
+                dele(selected_isbn);
+                insert(selected_book);
+                
+                vis[2] = true;
+                break;
+            case "keyword":
+                if (vis[3]) {
+                    throw("Invalid\n");
+                }
+                vector<string> new_keywords;
+                int cnt = 0;
+                for (int i = pos + 1; i < str.length(); i++) {
+                    if (str[i] == '|') {
+                        for (int j = 0; j < cnt; j++) {
+                            if (new_keywords[cnt] == new_keywords[j]) {
+                                // 相同的关键词
+                                throw("Invalid\n");
+                            }
+                        }
+                        cnt++;
+                    }
+                    new_keywords[cnt] += str[i];
+                }
+                selected_book.keyword = new_keywords;
+                dele(selected_isbn);
+                insert(selected_book);
+
+                vis[3] = true;
+                break;
+        }
+    }
 }
