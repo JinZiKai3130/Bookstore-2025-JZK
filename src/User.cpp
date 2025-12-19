@@ -126,7 +126,7 @@ std::vector<Users> UserManager::finduser(const char *id)
     return user_storage.search_data(id);
 }
 
-void UserManager::login(const char *id, const char *pwd = "")
+void UserManager::login(const char *id, const char *pwd)
 {
     int your_priv;
     (user_stack.empty()) ? (your_priv = 0) : (your_priv = user_stack.back().privilege);
@@ -192,7 +192,7 @@ void UserManager::delt(const char *id)
     user_storage.remove_data(id, cur_user[0]);
 }
 
-void UserManager::change_pwd(const char *id, const char *new_pwd, int your_priv, const char *pre_pwd = "")
+void UserManager::change_pwd(const char *id, const char *new_pwd, int your_priv, const char *pre_pwd)
 {
     if (!check_priv(your_priv))
     {

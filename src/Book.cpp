@@ -83,7 +83,6 @@ void BookManager::impt(const string &num, const string &tot_cost, const Users &c
         throw("Invalid\n");
     }
     int qty = std::stoi(num);
-    double tot_cost = std::stod(tot_cost);
 
     if (cur_user.selected_book[0] == '\0')
     {
@@ -196,7 +195,7 @@ bool BookManager::check_keywords(const vector<string> &kwd)
     return true;
 }
 
-vector<string> &parse_keywords(const string &keyword_str)
+vector<string> parse_keywords(const string &keyword_str)
 {
     vector<string> keywords;
     if (keyword_str.empty())

@@ -20,7 +20,7 @@ struct Users
         privilege = 0;
     }
 
-    Users::Users(const char *id, const char *pwd, const char *name, int priv)
+    Users(const char *id, const char *pwd, const char *name, int priv)
     {
         std::strncpy(UserID, id, 30);
         UserID[30] = '\0';
@@ -72,7 +72,7 @@ private:
 
 public:
     UserManager();
-    std::vector<Users> UserManager::finduser(const char *id);
+    std::vector<Users> finduser(const char *id);
     void useradd(const char *id, const char *pwd, int priv, const char *name, const int your_priv);
     void userdelete(const char *id, int your_priv);
     std::vector<Users> search_users(const char *id);
