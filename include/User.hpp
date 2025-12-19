@@ -72,14 +72,15 @@ private:
 
 public:
     UserManager();
-    std::vector<Users> &UserManager::finduser(const char *id);
-    void useradd(const char *id, const char *pwd, int priv, const char *name, int your_priv);
+    std::vector<Users> UserManager::finduser(const char *id);
+    void useradd(const char *id, const char *pwd, int priv, const char *name, const int your_priv);
     void userdelete(const char *id, int your_priv);
-    std::vector<Users> &search_users(const char *id);
-    void login(const char *id, const Users &cur_user, const char *pwd = "");
+    std::vector<Users> search_users(const char *id);
+    void login(const char *id, const char *pwd = "");
     void logout();
+    void delt(const char *id);
     void regist(const char *id, const char *pwd, const char *name);
-    void change_pwd(const char *id, const char *pre_pwd, int your_priv, const char *new_pwd = "");
+    void change_pwd(const char *id, const char *new_pwd, int your_priv, const char *pre_pwd = "");
     void select_book(const char *isbn);
     char *get_select();
     Users get_user();

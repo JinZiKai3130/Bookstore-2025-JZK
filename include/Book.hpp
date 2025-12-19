@@ -5,11 +5,13 @@
 #include <sstream>
 #include <string>
 #include <vector>
-using std::vector;
+#include "User.hpp"
 using std::string;
+using std::vector;
 
 // ISBN-Book映射
-struct Book {
+struct Book
+{
     char ISBN[21];
     char name[61];
     char author[61];
@@ -17,21 +19,22 @@ struct Book {
     double price;
     int quantity;
 
-    Book() {
+    Book()
+    {
         ISBN[0] = '\0';
         name[0] = '\0';
         author[0] = '\0';
         price = 0.00;
         quantity = 0;
-        
     }
 
-    Book(const char* new_ISBN,
-         const char* new_name,
-         const char* new_author,
-         const vector<string>& new_keyword,
-         const double& new_price,
-         const int& new_quantity) {
+    Book(const char *new_ISBN,
+         const char *new_name,
+         const char *new_author,
+         const vector<string> &new_keyword,
+         const double &new_price,
+         const int &new_quantity)
+    {
         std::strncpy(ISBN, new_ISBN, 20);
         ISBN[20] = '\0';
         std::strncpy(name, new_name, 60);
@@ -43,34 +46,43 @@ struct Book {
         quantity = new_quantity;
     }
 
-    Book& operator=(const Book& other) {
-        std::strncpy(ISBN, other.ISBN, 20); ISBN[20] = '\0';
-        std::strncpy(name, other.name, 60); name[60] = '\0';
-        std::strncpy(author, other.author, 60); author[60] = '\0';
+    Book &operator=(const Book &other)
+    {
+        std::strncpy(ISBN, other.ISBN, 20);
+        ISBN[20] = '\0';
+        std::strncpy(name, other.name, 60);
+        name[60] = '\0';
+        std::strncpy(author, other.author, 60);
+        author[60] = '\0';
         keyword = other.keyword;
         price = other.price;
         quantity = other.quantity;
         return *this;
     }
 
-    bool operator==(const Book& other) const {
+    bool operator==(const Book &other) const
+    {
         return std::strcmp(ISBN, other.ISBN) == 0;
     }
-    
-    bool operator<(const Book& other) const {
+
+    bool operator<(const Book &other) const
+    {
         return std::strcmp(ISBN, other.ISBN) < 0;
     }
 
-    void print() {
-        std::cout << ISBN << "\t" << name <<"\t" << author << "\t";
-        for (const auto& word : keyword) {
+    void print()
+    {
+        std::cout << ISBN << "\t" << name << "\t" << author << "\t";
+        for (const auto &word : keyword)
+        {
             std::cout << word << "\t";
         }
         std::cout << price << "\t" << quantity << "\n";
     }
 };
 
-class BookManager {
+class BookManager
+{
     BlockStorageSystem<Book> book_storage;
     BlockStorageSystem<string> name_isbn;
     BlockStorageSystem<string> author_isbn;
@@ -78,23 +90,23 @@ class BookManager {
 
 public:
     BookManager();
-    vector<string> f_by_name(const char* name);
-    vector<string> f_by_author(const char* author);
-    vector<string> f_by_keyword(const char* keywords);
-    vector<Book> f_by_isbn(const char* isbn);
-    void buy(const char* isbn, const string& num);
-    void select(const char* isbn);
-    void insert(const Book& new_book);
-    void dele(const char* isbn);
-    void impt(const string& num, const string& tot_cost, const Users& cur_user);
-    vector<string> parse_keywords(const string& keyword_str);
-    bool check_isbn(const char* isbn);
-    bool check_name(const char* name);
-    bool check_keywords(const vector<string>& kwd);
-    bool check_quantity(const std::string& quantity);
-    bool check_price(const string& pric);
-    void show(const string& str);
-    void modify(const string& str, string& selected_isbn);
+    vector<string> f_by_name(const char *name);
+    vector<string> f_by_author(const char *author);
+    vector<string> f_by_keyword(const char *keywords);
+    vector<Book> f_by_isbn(const char *isbn);
+    void buy(const char *isbn, const string &num);
+    void select(const char *isbn);
+    void insert(const Book &new_book);
+    void dele(const char *isbn);
+    void impt(const string &num, const string &tot_cost, const Users &cur_user);
+    vector<string> parse_keywords(const string &keyword_str);
+    bool check_isbn(const char *isbn);
+    bool check_name(const char *name);
+    bool check_keywords(const vector<string> &kwd);
+    bool check_quantity(const std::string &quantity);
+    bool check_price(const string &pric);
+    void show(const string &str);
+    void modify(const string &str, string &selected_isbn);
 };
 
 #endif // BOOK_H

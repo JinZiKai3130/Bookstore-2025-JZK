@@ -72,7 +72,7 @@ bool UserManager::check_name(const char *str)
     return true;
 }
 
-void UserManager::useradd(const char *id, const char *pwd, int priv, const char *name, int your_priv)
+void UserManager::useradd(const char *id, const char *pwd, int priv, const char *name, const int your_priv)
 {
     if (!check_priv(priv) || priv == 7 || !check_id(id) || !check_id(pwd) || !check_name(name))
     {
@@ -121,29 +121,31 @@ void UserManager::userdelete(const char *id, int your_priv)
     }
 }
 
-std::vector<Users> &UserManager::finduser(const char *id)
+std::vector<Users> UserManager::finduser(const char *id)
 {
     return user_storage.search_data(id);
 }
 
-void UserManager::login(const char *id, const Users &cur_user, const char *pwd = "")
+void UserManager::login(const char *id, const char *pwd = "")
 {
     int your_priv;
-    (user_stack.empty()) ? (yout_priv = 0) : (your_priv = user_stack.back().privilege);
+    (user_stack.empty()) ? (your_priv = 0) : (your_priv = user_stack.back().privilege);
+
+    std::vector<Users> cur_user = finduser(id);
     if (your_priv >= 0)
     {
         if (cur_user.empty())
         { // 没有该用户
             throw("Invalid\n");
         }
-        if (your_priv > cur_user.privilege)
+        if (your_priv > cur_user[0].privilege)
         {
-            user_stack.push_back(cur_user);
+            user_stack.push_back(cur_user[0]);
         }
-        else if (strcmp(pwd, cur_user.Password) == 0)
+        else if (strcmp(pwd, cur_user[0].Password) == 0)
         {
             // 成功登录
-            user_stack.push_back(cur_user);
+            user_stack.push_back(cur_user[0]);
         }
         else
         { // 密码错误
@@ -170,10 +172,27 @@ void UserManager::logout()
 
 void UserManager::regist(const char *id, const char *pwd, const char *name)
 {
-    UserManager::useradd(id, pwd, 1, name, 3);
+    useradd(id, pwd, 1, name, 3);
 }
 
-void UserManager::change_pwd(const char *id, const char *pre_pwd, int your_priv, const char *new_pwd = "")
+void UserManager::delt(const char *id)
+{
+    std::vector<Users> cur_user = finduser(id);
+    if (cur_user.empty())
+    {
+        throw("Invalid\n");
+    }
+    for (const auto &cur_user : user_stack)
+    {
+        if (cur_user.UserID == id)
+        {
+            throw("Invalid\n");
+        }
+    }
+    user_storage.remove_data(id, cur_user[0]);
+}
+
+void UserManager::change_pwd(const char *id, const char *new_pwd, int your_priv, const char *pre_pwd = "")
 {
     if (!check_priv(your_priv))
     {
@@ -200,7 +219,7 @@ void UserManager::change_pwd(const char *id, const char *pre_pwd, int your_priv,
         }
     }
     UserManager::userdelete(id, 7);
-    UserManager::useradd(id, new_pwd, cur_user[0].privilege, cur_user[0].name, 7);
+    UserManager::useradd(id, new_pwd, cur_user[0].privilege, cur_user[0].username, 7);
 }
 
 void UserManager::select_book(const char *isbn)
@@ -213,7 +232,11 @@ char *UserManager::get_select()
     return user_stack.back().selected_book;
 }
 
-Users get_user()
+Users UserManager::get_user()
 {
+    if (user_stack.empty())
+    {
+        throw("Invalid\n");
+    }
     return user_stack.back();
 }

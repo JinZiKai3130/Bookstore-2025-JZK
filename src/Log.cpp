@@ -6,10 +6,10 @@ FinanceLogManager::FinanceLogManager() : finance_storage("./data/Bookstore_Users
     finance_storage.initialize_system();
 }
 
-void FinanceLogManager::add_finance_record(const double &money, const bool type, const string &bookname)
+void FinanceLogManager::add_finance_record(const double &money, const bool type, const string &isbn)
 {
     finance_total_count++;
-    FinanceLog new_log(finance_total_count, money, type, bookname);
+    FinanceLog new_log(finance_total_count, money, type, isbn);
     std::string string_count = std::to_string(finance_total_count);
     finance_storage.add_data(string_count, new_log);
 }
