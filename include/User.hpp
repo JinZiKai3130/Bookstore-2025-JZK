@@ -1,16 +1,18 @@
 #pragma once
 #include <cstring>
-#include "BlockStorage.h"
+#include "BlockStorage.hpp"
 #include <vector>
 
-struct Users {
+struct Users
+{
     char UserID[31];
     char Password[31];
     char username[31];
     char selected_book[21];
     int privilege;
-    
-    Users() {
+
+    Users()
+    {
         UserID[0] = '\0';
         Password[0] = '\0';
         username[0] = '\0';
@@ -18,7 +20,8 @@ struct Users {
         privilege = 0;
     }
 
-    Users(const char* id, const char* pwd, const char* name, int priv) {
+    Users::Users(const char *id, const char *pwd, const char *name, int priv)
+    {
         std::strncpy(UserID, id, 30);
         UserID[30] = '\0';
         std::strncpy(Password, pwd, 30);
@@ -29,46 +32,55 @@ struct Users {
         privilege = priv;
     }
 
-    Users& operator=(const Users& other) {
-        if (this == &other) return *this;
-        std::strncpy(UserID, other.UserID, 30); UserID[30] = '\0';
-        std::strncpy(Password, other.Password, 30); Password[30] = '\0';
-        std::strncpy(username, other.username, 30); username[30] = '\0';
+    Users &operator=(const Users &other)
+    {
+        if (this == &other)
+            return *this;
+        std::strncpy(UserID, other.UserID, 30);
+        UserID[30] = '\0';
+        std::strncpy(Password, other.Password, 30);
+        Password[30] = '\0';
+        std::strncpy(username, other.username, 30);
+        username[30] = '\0';
         privilege = other.privilege;
         return *this;
     }
 
-    bool operator==(const Users& other) const {
+    bool operator==(const Users &other) const
+    {
         return std::strcmp(UserID, other.UserID) == 0 &&
                std::strcmp(Password, other.Password) == 0 &&
                std::strcmp(username, other.username) == 0 &&
                privilege == other.privilege;
     }
 
-    bool operator<(const Users& other) const {
+    bool operator<(const Users &other) const
+    {
         return std::strcmp(UserID, other.UserID) < 0;
     }
 };
 
-class UserManager {
+class UserManager
+{
 private:
     BlockStorageSystem<Users> user_storage;
     std::vector<Users> user_stack;
     // User& find_user(const char* id);
-    bool check_priv(int priv);
-    bool check_id(const char* str);
-    bool check_name(const char* str);
+    bool check_priv(const int &priv);
+    bool check_id(const char *str);
+    bool check_name(const char *str);
+
 public:
     UserManager();
-    void useradd(const char* id, const char* pwd, int priv, const char* name, int your_priv);
-    void userdelete(const char* id, int your_priv);
-    std::vector<Users>& search_users(const char* id);
-    void login(const char* id, const char* pwd = "");
+    std::vector<Users> &UserManager::finduser(const char *id);
+    void useradd(const char *id, const char *pwd, int priv, const char *name, int your_priv);
+    void userdelete(const char *id, int your_priv);
+    std::vector<Users> &search_users(const char *id);
+    void login(const char *id, const Users &cur_user, const char *pwd = "");
     void logout();
-    void regist(const char* id, const char* pwd, const char* name);
-    void change_pwd(const char* id, const char* pre_pwd, const char* new_pwd = "", int your_priv);
-    void select_book(const char* isbn);
-    char* get_select();
+    void regist(const char *id, const char *pwd, const char *name);
+    void change_pwd(const char *id, const char *pre_pwd, int your_priv, const char *new_pwd = "");
+    void select_book(const char *isbn);
+    char *get_select();
+    Users get_user();
 };
-
-#endif

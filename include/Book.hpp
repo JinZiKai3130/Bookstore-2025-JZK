@@ -2,10 +2,11 @@
 #define BOOK_H
 
 #include <cstring>
+#include <sstream>
 #include <string>
 #include <vector>
-using namespace vector;
-using namespace string;
+using std::vector;
+using std::string;
 
 // ISBN-Book映射
 struct Book {
@@ -71,30 +72,29 @@ struct Book {
 
 class BookManager {
     BlockStorageSystem<Book> book_storage;
-    BlockStorageSystem<char*> name_isbn;
-    BlockStorageSystem<char*> author_isbn;
-    BlockStorageSystem<char*> keyword_isbn;
+    BlockStorageSystem<string> name_isbn;
+    BlockStorageSystem<string> author_isbn;
+    BlockStorageSystem<string> keyword_isbn;
 
 public:
     BookManager();
-    vector<char*>& f_by_name(const char* name);
-    vector<char*>& f_by_author(const char* author);
-    vector<char*>& f_by_keyword(const char* keywords);
-    vector<Book>& f_by_isbn(const char* isbn);
+    vector<string> f_by_name(const char* name);
+    vector<string> f_by_author(const char* author);
+    vector<string> f_by_keyword(const char* keywords);
+    vector<Book> f_by_isbn(const char* isbn);
     void buy(const char* isbn, const string& num);
     void select(const char* isbn);
-    void insert(const char* isbn, const char* name,
-                const char* author, const vector<string>& keywords,
-                const double& pric, const int& num);
+    void insert(const Book& new_book);
     void dele(const char* isbn);
-    void impt(const int& num, const double& tot_cost);
+    void impt(const string& num, const string& tot_cost, const Users& cur_user);
     vector<string> parse_keywords(const string& keyword_str);
     bool check_isbn(const char* isbn);
     bool check_name(const char* name);
     bool check_keywords(const vector<string>& kwd);
+    bool check_quantity(const std::string& quantity);
     bool check_price(const string& pric);
     void show(const string& str);
-    void modify(const string& str);
+    void modify(const string& str, string& selected_isbn);
 };
 
 #endif // BOOK_H

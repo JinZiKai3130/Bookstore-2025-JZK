@@ -3,8 +3,9 @@
 #include <iostream>
 #include <vector>
 #include <cstring>
-using namespace string;
-using namespace vector;
+#include "BlockStorage.hpp"
+using std::string;
+using std::vector;
 
 
 struct FinanceLog {
@@ -13,13 +14,13 @@ struct FinanceLog {
     bool type;
     std::string bookname;
 
-    FinanceLog (const int count, const double money
+    FinanceLog (const int count, const double money,
                 const bool type, 
                 const string& bookname) : 
                 count(count), money(money),
                 type(type), bookname(bookname) {}
     
-    FinanceLog& operator=(const FinanaceLog& other) {
+    FinanceLog& operator=(const FinanceLog& other) {
         count = other.count;
         money = other.money;
         type = other.type;
@@ -34,7 +35,7 @@ struct FinanceLog {
                bookname == other.bookname;
     }
 
-    bool operator<(const Users& other) const {
+    bool operator<(const FinanceLog& other) const {
         return count < other.count;
     }
 
@@ -51,21 +52,21 @@ struct EmployeeLog {
 
     EmployeeLog (const char* id, 
                const string& oper) : oper(oper) {
-                    std::strncpy(employeeid, id);
+                    std::strncpy(employeeid, id, 30);
     }
     
     EmployeeLog& operator=(const EmployeeLog& other) {
-        std::strncpy(employeeid, other.employeeid);
+        std::strncpy(employeeid, other.employeeid, 30);
         oper = other.oper;
     }
 
     bool operator==(const EmployeeLog& other) const {
-        return std::strncpy(employeeid, other.employeeid) == 0 &&
+        return std::strcmp(employeeid, other.employeeid) == 0 &&
                oper == other.oper;
     }
 
     bool operator<(const EmployeeLog& other) const {
-        return std::strncpy(employeeid, other.employeeid) < 0;
+        return std::strcmp(employeeid, other.employeeid) < 0;
     }
 
     void print() {
@@ -78,7 +79,7 @@ struct Log {
     string userid;
     string oper;
 
-    Log (long long count, const string& userid
+    Log (long long count, const string& userid,
          const string& oper) :
          count(count), oper(oper), userid(userid) {
     }
@@ -95,7 +96,7 @@ struct Log {
                userid == other.userid;
     }
 
-    bool operator<(const EmployeeLog& other) const {
+    bool operator<(const Log& other) const {
         return count < other.count;
     }
 
@@ -104,13 +105,14 @@ struct Log {
                   << " user:" << userid
                   << " operation:" << oper << '\n';
     }
-}
+};
 
 class FinanceLogManager {
     int finance_total_count;
     BlockStorageSystem<FinanceLog> finance_storage;
 
 public:
+    FinanceLogManager();
     void add_finance_record(const double& money,
                             const bool type,
                             const string& bookname);
@@ -129,5 +131,5 @@ class Log {
     BlockStorageSystem<Log> entire_storage;
 
 public:
-    
-}
+
+};
