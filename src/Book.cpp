@@ -62,17 +62,17 @@ void BookManager::select(const char* isbn) {
     insert(new_book);
 }
 
-void BookManager::impt(const string& num, const string& tot_cost) {
+void BookManager::impt(const string& num, const string& tot_cost, const User& cur_user) {
     if (!check_quantity(num) || !check_price(tot_cost)) {
         throw("Invalid\n");
     }
     int qty = std::stoi(num);
     double tot_cost = std::stod(tot_cost);
 
-    if (user_stack.back().selected_book[0] == '\0') {
+    if (cur_user.selected_book[0] == '\0') {
         throw("Invalid\n");
     }
-    vector<Book> cur_book = f_by_isbn(user_stack.back().selected_book);
+    vector<Book> cur_book = f_by_isbn(cur_user.selected_book);
     cur_book[0].quantity += qty;
     BookManager::dele(cur_book[0].isbn);
     BookManager::insert(cur_book[0]);
@@ -239,7 +239,7 @@ bool BookManager::check_price(const string& pric) {
 void BookManager::show(const string& str) {
     // 假定str已经只有一个搜索条件
     if (str.empty()) {
-        book_storage.traverse_all();
+        book_storage.traverse();
     }
 
     string s;

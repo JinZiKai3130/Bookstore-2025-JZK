@@ -300,7 +300,7 @@ public:
         return results;
     }
 
-    void traverse_all() {
+    void traverse(const string& condition = "") {
         if (first_block_ptr == -1) {
             std::cout << '\n';
             return;
@@ -313,7 +313,19 @@ public:
             StorageBlock<T> curr_block;
             read_storage_block(current, curr_block);
             for (int i = 0; i < curr_block.element_count; ++i) {
-                curr_block.value_storage[i].print();
+                if (condition.length() == 0) { 
+                    // 遍历书本or遍历全部finance_log
+                    curr_block.value_storage[i].print();
+                }
+                else {
+                    // 遍历number + 1 到最后的所有finance_log
+                    int number = std::stoi(condition);
+                    int cur_num = std::stoi(curr_block.key_storage[i]);
+                    if (number < cur_num) {
+                        curr_block.value_storage[i].print();
+                    }
+                }
+                // curr_block.value_storage[i].print();
             }
             total_elements += curr_block.element_count;
             block_count++;

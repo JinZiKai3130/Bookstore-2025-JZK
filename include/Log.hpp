@@ -111,7 +111,10 @@ class FinanceLogManager {
     BlockStorageSystem<FinanceLog> finance_storage;
 
 public:
-
+    void add_finance_record(const double& money,
+                            const bool type,
+                            const string& bookname);
+    void view_finance_record(const int& number);
 };
 
 class EmployeeLogManager {
@@ -126,5 +129,5 @@ class Log {
     BlockStorageSystem<Log> entire_storage;
 
 public:
-
+    
 }
