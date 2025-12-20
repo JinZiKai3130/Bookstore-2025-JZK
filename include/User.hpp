@@ -73,7 +73,7 @@ private:
 public:
     UserManager();
     std::vector<Users> finduser(const char *id);
-    void useradd(const char *id, const char *pwd, int priv, const char *name, const int your_priv);
+    void useradd(const char *id, const char *pwd, int priv, const char *name, const int your_priv, const bool modify);
     void userdelete(const char *id, int your_priv);
     std::vector<Users> search_users(const char *id);
     void login(const char *id, const char *pwd = "");

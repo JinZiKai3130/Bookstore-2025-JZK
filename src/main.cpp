@@ -18,8 +18,10 @@ int main()
     FinanceLogManager finance_magr;
 
     string op, line;
+    int tmp_cnt = 0;
     while (true)
     {
+        tmp_cnt++;
         std::cin >> op;
         if (op == "quit" || op == "exit")
             break;
@@ -44,6 +46,11 @@ int main()
             {
                 string id, password, username;
                 iss >> id >> password >> username;
+                if (iss >> username)
+                {
+                    // std::cout << username << std::endl;
+                    throw("Invalid\n");
+                }
                 user_magr.regist(id.c_str(), password.c_str(), username.c_str());
             }
             else if (op == "passwd")
@@ -68,7 +75,7 @@ int main()
                     cur_pwd = words[1];
                     new_pwd = words[2];
                 }
-
+                // std::cout << "start pwd change" << std::endl;
                 user_magr.change_pwd(id.c_str(), new_pwd.c_str(), cur_user.privilege, cur_pwd.c_str());
             }
             else if (op == "useradd")
@@ -81,7 +88,12 @@ int main()
                 string id, pwd, username;
                 int privilege;
                 iss >> id >> pwd >> privilege >> username;
-                user_magr.useradd(id.c_str(), pwd.c_str(), privilege, username.c_str(), cur_user.privilege);
+                if (iss >> username)
+                {
+                    std::cout << username << std::endl;
+                    throw("Invalid\n");
+                }
+                user_magr.useradd(id.c_str(), pwd.c_str(), privilege, username.c_str(), cur_user.privilege, 0);
             }
             else if (op == "delete")
             {
@@ -179,6 +191,7 @@ int main()
         }
         catch (const char *e)
         {
+            // std::cout << "Line" << tmp_cnt << std::endl;
             std::cout << e;
         }
     }
