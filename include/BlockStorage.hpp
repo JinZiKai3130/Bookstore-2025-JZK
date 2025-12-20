@@ -262,6 +262,7 @@ public:
             new_block.key_storage[0][MAX_KEY_SIZE] = '\0';
             new_block.value_storage[0] = value;
             new_block.element_count = 1;
+            // std::cout << "key = " << key << std::endl;
             write_storage_block(first_block_ptr, new_block);
             return;
         }

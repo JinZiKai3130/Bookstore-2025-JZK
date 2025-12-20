@@ -1,10 +1,10 @@
 #include "User.hpp"
+#include <cstring>
 
 UserManager::UserManager()
     : user_storage("./data/Bookstore_Users")
 { // 拼接路径：./data/Bookstore_Users
     user_storage.initialize_system();
-
     // 初始化
     string id = "root";
     string pwd = "sjtu";
@@ -22,29 +22,36 @@ bool UserManager::check_priv(const int &priv)
 
 bool UserManager::check_id(const char *str)
 {
+    string checkingid = str;
     int cnt = 0;
-    if (*str == '\0')
+    if (checkingid == "")
         return false;
-    while (*str != '\0')
+    if (checkingid.size() > 30)
+        return false;
+    while (cnt < checkingid.size())
     {
-        str++;
-        cnt++;
-        if (cnt > 30)
-            return false;
         if (*str >= '0' && *str <= '9')
         {
+            cnt++;
+            str++;
             continue;
         }
         if (*str >= 'A' && *str <= 'Z')
         {
+            cnt++;
+            str++;
             continue;
         }
         if (*str >= 'a' && *str <= 'z')
         {
+            cnt++;
+            str++;
             continue;
         }
         if (*str == '_')
         {
+            cnt++;
+            str++;
             continue;
         }
         return false;
@@ -59,12 +66,12 @@ bool UserManager::check_name(const char *str)
         return false;
     while (*str != '\0')
     {
-        str++;
-        cnt++;
         if (cnt > 30)
             return false;
         if (static_cast<int>(*str) >= 32 && static_cast<int>(*str) <= 126)
         {
+            str++;
+            cnt++;
             continue;
         }
         return false;
@@ -88,6 +95,7 @@ void UserManager::useradd(const char *id, const char *pwd, int priv, const char 
         }
         else
         {
+            // std::cout << "same name" << std::endl;
             throw("Invalid\n");
         }
     }
@@ -132,10 +140,12 @@ void UserManager::login(const char *id, const char *pwd)
     (user_stack.empty()) ? (your_priv = 0) : (your_priv = user_stack.back().privilege);
 
     std::vector<Users> cur_user = finduser(id);
+    // std::cout << "id = " << id << " password = " << pwd << '\n';
     if (your_priv >= 0)
     {
         if (cur_user.empty())
         { // 没有该用户
+            std::cout << "no user" << std::endl;
             throw("Invalid\n");
         }
         if (your_priv > cur_user[0].privilege)
