@@ -1,6 +1,6 @@
 #include "Log.hpp"
 
-FinanceLogManager::FinanceLogManager() : finance_storage("./data/Bookstore_Users/finance_storage")
+FinanceLogManager::FinanceLogManager() : finance_storage("./data/finance_storage.dat")
 {
     finance_total_count = 0;
     finance_storage.initialize_system();

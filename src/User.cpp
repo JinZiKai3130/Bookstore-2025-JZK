@@ -2,7 +2,7 @@
 #include <cstring>
 
 UserManager::UserManager()
-    : user_storage("./data/Bookstore_Users")
+    : user_storage("./data/Users.dat")
 { // 拼接路径：./data/Bookstore_Users
     user_storage.initialize_system();
     // 初始化
