@@ -352,10 +352,6 @@ public:
                                 attempt_block_merge(current, current_block.next_block_ptr);
                             }
                         }
-                        else if (current_block.prev_block_ptr == -1 && current_block.next_block_ptr == -1 && current_block.element_count == 0)
-                        {
-                            first_block_ptr = -1;
-                        }
                     }
                     break;
                 }
