@@ -252,6 +252,7 @@ void UserManager::change_pwd(const char *id, const char *new_pwd, int your_priv,
 void UserManager::select_book(const char *isbn)
 {
     strcpy(user_stack.back().selected_book, isbn);
+    // std::cout << "selected-this " << user_stack.back().selected_book << '\n';
 }
 
 char *UserManager::get_select()

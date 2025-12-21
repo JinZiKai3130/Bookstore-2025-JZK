@@ -146,19 +146,24 @@ int main()
                 iss >> isbn;
                 if (!book_magr.check_isbn(isbn.c_str()))
                 {
+                    std::cout << "Invalid1\n";
                     throw("Invalid\n");
                 }
                 if (iss >> isbn)
                 {
+                    std::cout << "Invalid2\n";
                     throw("Invalid\n");
                 }
                 user_magr.select_book(isbn.c_str());
+                book_magr.select(isbn.c_str());
             }
             else if (op == "modify")
             {
                 Users cur_user = user_magr.get_user();
                 string tmp = cur_user.selected_book;
+                // std::cout << "modifystat\n";
                 book_magr.modify(line, tmp);
+                // std::cout << "modifyend\n";
                 user_magr.select_book(tmp.c_str());
             }
             else if (op == "import")
