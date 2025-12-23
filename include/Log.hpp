@@ -12,21 +12,24 @@ struct FinanceLog
     int count;
     double money;
     bool type;
-    std::string isbn;
+    char isbn[21];
 
-    FinanceLog() { count = 0, money = 0.00, type = 0, isbn = ""; }
+    FinanceLog() { count = 0, money = 0.00, type = 0, isbn[0] = '\0'; }
 
     FinanceLog(const int count, const double money,
                const bool type,
-               const string &isbn) : count(count), money(money),
-                                     type(type), isbn(isbn) {}
+               const char *isbn) : count(count), money(money),
+                                   type(type)
+    {
+        std::strncpy(this->isbn, isbn, 20);
+    }
 
     FinanceLog &operator=(const FinanceLog &other)
     {
         count = other.count;
         money = other.money;
         type = other.type;
-        isbn = other.isbn;
+        std::strncpy(this->isbn, other.isbn, 20);
         return *this;
     }
 
@@ -134,7 +137,7 @@ public:
     FinanceLogManager();
     void add_finance_record(const double &money,
                             const bool type,
-                            const string &isbn);
+                            const char *isbn);
     void view_finance_record(const int &number);
 };
 

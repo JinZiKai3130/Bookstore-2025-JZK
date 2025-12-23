@@ -26,6 +26,7 @@ int main()
         if (op == "quit" || op == "exit")
             break;
         getline(std::cin, line);
+        // std::cin.ignore();
         line.erase(0, 1);
         std::istringstream iss(line);
         try
@@ -90,7 +91,7 @@ int main()
                 iss >> id >> pwd >> privilege >> username;
                 if (iss >> username)
                 {
-                    std::cout << username << std::endl;
+                    // std::cout << username << std::endl;
                     throw("Invalid\n");
                 }
                 user_magr.useradd(id.c_str(), pwd.c_str(), privilege, username.c_str(), cur_user.privilege, 0);
@@ -137,7 +138,7 @@ int main()
                 book_magr.buy(isbn.c_str(), quantity);
                 vector<Book> cur_book = book_magr.f_by_isbn(isbn.c_str());
                 double tot_money = cur_book[0].price * static_cast<double>(std::stoi(quantity));
-                finance_magr.add_finance_record(tot_money, 0, isbn);
+                finance_magr.add_finance_record(tot_money, 0, isbn.c_str());
             }
             else if (op == "select")
             {
@@ -146,12 +147,12 @@ int main()
                 iss >> isbn;
                 if (!book_magr.check_isbn(isbn.c_str()))
                 {
-                    std::cout << "Invalid1\n";
+                    // std::cout << "Invalid1\n";
                     throw("Invalid\n");
                 }
                 if (iss >> isbn)
                 {
-                    std::cout << "Invalid2\n";
+                    // std::cout << "Invalid2\n";
                     throw("Invalid\n");
                 }
                 user_magr.select_book(isbn.c_str());
@@ -159,7 +160,10 @@ int main()
             }
             else if (op == "modify")
             {
+
                 Users cur_user = user_magr.get_user();
+                if (strlen(cur_user.selected_book) == 0)
+                    throw("Invalid\n");
                 string tmp = cur_user.selected_book;
                 // std::cout << "modifystat\n";
                 book_magr.modify(line, tmp);
@@ -168,6 +172,7 @@ int main()
             }
             else if (op == "import")
             {
+                // std::cout << "start import\n";
                 Users cur_user = user_magr.get_user();
                 string number, tot_cost;
                 iss >> number >> tot_cost;
@@ -175,10 +180,11 @@ int main()
                 {
                     throw("Invalid\n");
                 }
-                book_magr.impt(number, tot_cost, cur_user);
+                book_magr.impt(number, cur_user);
 
                 double tot_money = std::stod(tot_cost);
                 finance_magr.add_finance_record(tot_money, 1, cur_user.selected_book);
+                // std::cout << "end import\n";
             }
             // else if (op == "log")
             // {

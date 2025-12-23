@@ -257,7 +257,8 @@ void UserManager::select_book(const char *isbn)
 
 char *UserManager::get_select()
 {
-    return user_stack.back().selected_book;
+    if (user_stack.back().selected_book)
+        return user_stack.back().selected_book;
 }
 
 Users UserManager::get_user()

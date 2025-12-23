@@ -194,28 +194,19 @@ private:
 
     long find_appropriate_block(const std::string &target_key)
     {
-        // std::cout << "start to find appropriate\n";
         if (first_block_ptr == -1)
             return -1;
         long current = first_block_ptr;
-        // std::cout << "current = " << current << std::endl;
         while (current != -1)
         {
             StorageBlock<T> curr_block;
             read_storage_block(current, curr_block);
-            // std::cout << "after read\n";
             if (curr_block.element_count > 0 && strcmp(target_key.c_str(), curr_block.key_storage[curr_block.element_count - 1]) <= 0)
             {
                 return current;
             }
-            std::cout << "after compare\n";
             if (curr_block.next_block_ptr == -1)
-            {
-                std::cout << "current = " << current << std::endl;
                 return current;
-            }
-
-            // std::cout << "after return\n";
             current = curr_block.next_block_ptr;
         }
         return last_block_ptr;
@@ -271,14 +262,10 @@ public:
             new_block.key_storage[0][MAX_KEY_SIZE] = '\0';
             new_block.value_storage[0] = value;
             new_block.element_count = 1;
-            // std::cout << "key = " << key << std::endl;
             write_storage_block(first_block_ptr, new_block);
             return;
         }
-        // std::cout << "operate here\n";
-        // std::cout << "key = " << key << '\n';
         long pos = find_appropriate_block(key);
-        std::cout << "pos = " << pos << '\n';
         if (pos == -1)
             pos = last_block_ptr;
         StorageBlock<T> target_block;
@@ -291,7 +278,7 @@ public:
                 return;
             }
         }
-        // std::cout << "operateOnce\n";
+
         int insert_pos = target_block.locate_key_position(key);
         target_block.add_element(insert_pos, key, value);
         if (target_block.is_full())
@@ -341,11 +328,6 @@ public:
                                 attempt_block_merge(current, curr_block.next_block_ptr);
                             }
                         }
-                        // else if (curr_block.prev_block_ptr == -1 && curr_block.next_block_ptr == -1 && curr_block.element_count == 0)
-                        // {
-                        //     // std::cout << "xxx\n";
-                        //     first_block_ptr = -1;
-                        // }
                     }
                     break;
                 }

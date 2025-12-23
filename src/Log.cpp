@@ -6,7 +6,7 @@ FinanceLogManager::FinanceLogManager() : finance_storage("./data/finance_storage
     finance_storage.initialize_system();
 }
 
-void FinanceLogManager::add_finance_record(const double &money, const bool type, const string &isbn)
+void FinanceLogManager::add_finance_record(const double &money, const bool type, const char *isbn)
 {
     finance_total_count++;
     FinanceLog new_log(finance_total_count, money, type, isbn);

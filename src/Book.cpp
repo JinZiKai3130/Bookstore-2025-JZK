@@ -12,17 +12,17 @@ BookManager::BookManager() : book_storage("./data/book_storage.dat"),
     keyword_isbn.initialize_system();
 }
 
-vector<string> BookManager::f_by_name(const char *name)
+vector<name_author_isbn> BookManager::f_by_name(const char *name)
 {
     return name_isbn.search_data(name);
 }
 
-vector<string> BookManager::f_by_author(const char *author)
+vector<name_author_isbn> BookManager::f_by_author(const char *author)
 {
     return author_isbn.search_data(author);
 }
 
-vector<string> BookManager::f_by_keyword(const char *keyword)
+vector<keyword_isbn_> BookManager::f_by_keyword(const char *keyword)
 {
     return keyword_isbn.search_data(keyword);
 }
@@ -79,9 +79,9 @@ void BookManager::select(const char *isbn)
     insert(new_book);
 }
 
-void BookManager::impt(const string &num, const string &tot_cost, const Users &cur_user)
+void BookManager::impt(const string &num, const Users &cur_user)
 {
-    if (!check_quantity(num) || !check_price(tot_cost))
+    if (!check_quantity(num))
     {
         throw("Invalid\n");
     }
@@ -93,10 +93,10 @@ void BookManager::impt(const string &num, const string &tot_cost, const Users &c
     }
     vector<Book> cur_book = f_by_isbn(cur_user.selected_book);
     cur_book[0].quantity += qty;
-
-    BookManager::dele(cur_book[0].ISBN);
-
-    BookManager::insert(cur_book[0]);
+    // cur_book[0].print();
+    dele(cur_book[0].ISBN);
+    // cur_book[0].print();
+    insert(cur_book[0]);
 }
 
 void BookManager::insert(const Book &new_book)
@@ -108,41 +108,57 @@ void BookManager::insert(const Book &new_book)
     }
     // std::cout << "inserting\n";
     book_storage.add_data(new_book.ISBN, new_book);
+    // std::cout << "insert ISBN = " << new_book.ISBN << "\n";
     // std::cout << "insert name = " << new_book.name << "\n";
+    // std::cout << "insert author = " << new_book.author << "\n";
+    name_author_isbn new_name(new_book.name, new_book.ISBN);
+    name_author_isbn new_author(new_book.author, new_book.ISBN);
     if (strlen(new_book.name) != 0)
-        name_isbn.add_data(new_book.name, new_book.ISBN);
+        name_isbn.add_data(new_book.name, new_name);
     // std::cout << "insert author\n";
     if (strlen(new_book.author) != 0)
-        author_isbn.add_data(new_book.author, new_book.ISBN);
+        author_isbn.add_data(new_book.author, new_author);
     // std::cout << "insert keywords\n";
-    if (!new_book.keyword.empty())
-        for (const auto &kywd : new_book.keyword)
+    if (strlen(new_book.keyword) != 0)
+    {
+        std::vector<std::array<char, 61>> kwds = parse_keywords(new_book.keyword);
+        for (const auto &kwd : kwds)
         {
-            keyword_isbn.add_data(kywd, new_book.ISBN);
+            char new_keyword[61];
+            std::copy_n(kwd.begin(), 60, new_keyword);
+            keyword_isbn.add_data(new_keyword, keyword_isbn_(new_keyword, new_book.ISBN));
         }
+    }
 }
 
 void BookManager::dele(const char *isbn)
 {
     vector<Book> cur_book = book_storage.search_data(isbn);
-    if (cur_book.empty())
+    if (cur_book.empty() || cur_book.size() > 1)
     {
         throw("Invalid\n");
     }
     // std::cout << "ok here1\n";
     book_storage.remove_data(isbn, cur_book[0]);
     // std::cout << "cur_book[0].name = " << cur_book[0].name << "end" << std::endl;
+    name_author_isbn cur_name(cur_book[0].name, cur_book[0].ISBN);
+    name_author_isbn cur_author(cur_book[0].author, cur_book[0].ISBN);
     if (strlen(cur_book[0].name) != 0)
-        name_isbn.remove_data(cur_book[0].name, cur_book[0].ISBN);
+        name_isbn.remove_data(cur_book[0].name, cur_name);
     // std::cout << "cur_book[0].author = " << cur_book[0].author << "end" << std::endl;
     if (strlen(cur_book[0].author) != 0)
-        author_isbn.remove_data(cur_book[0].author, cur_book[0].ISBN);
+        author_isbn.remove_data(cur_book[0].author, cur_author);
     // std::cout << "cur_book[0].keyword = " << cur_book[0].keyword.empty() << " end" << std::endl;
-    if (!cur_book[0].keyword.empty())
-        for (const auto &kywd : cur_book[0].keyword)
+    if (strlen(cur_book[0].keyword) != 0)
+    {
+        std::vector<std::array<char, 61>> kwds = parse_keywords(cur_book[0].keyword);
+        for (const auto &kwd : kwds)
         {
-            keyword_isbn.remove_data(kywd, cur_book[0].ISBN);
+            char new_keyword[61];
+            std::copy_n(kwd.begin(), 61, new_keyword);
+            keyword_isbn.remove_data(new_keyword, keyword_isbn_(new_keyword, cur_book[0].ISBN));
         }
+    }
     // std::cout << "go here\n";
 }
 
@@ -180,64 +196,68 @@ bool BookManager::check_name(const char *name)
     return true;
 }
 
-bool BookManager::check_keywords(const vector<string> &kwd)
+vector<std::array<char, 61>> BookManager::parse_keywords(const string &keyword_str)
 {
-    if (kwd.empty())
-        return false;
+    vector<std::array<char, 61>> keywords;
 
-    for (const auto &keyword : kwd)
-    {
-        size_t len = keyword.length();
-        if (len == 0 || len > 60)
-            return false;
-        for (char c : keyword)
-        {
-            unsigned char uc = static_cast<unsigned char>(c);
-            if (uc < 32 || uc > 126 || uc == 34)
-            {
-                return false;
-            }
-        }
-    }
-
-    for (size_t i = 0; i < kwd.size(); ++i)
-    {
-        for (size_t j = i + 1; j < kwd.size(); ++j)
-        {
-            if (kwd[i] == kwd[j])
-            {
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
-vector<string> parse_keywords(const string &keyword_str)
-{
-    vector<string> keywords;
     if (keyword_str.empty())
         return keywords;
 
-    size_t start = 0;
-    size_t end = keyword_str.find('|');
-
-    while (true)
+    if (keyword_str.front() == '|' || keyword_str.back() == '|' ||
+        keyword_str.find("||") != string::npos)
     {
-        string keyword;
-        if (end == std::string::npos)
+        throw "Invalid\n";
+    }
+
+    size_t start = 0;
+    size_t end = 0;
+    vector<string> temp_keywords;
+
+    while (end <= keyword_str.length())
+    {
+        if (end == keyword_str.length() || keyword_str[end] == '|')
         {
-            keyword = keyword_str.substr(start);
+            if (end == start)
+            {
+                throw("Invalid\n");
+            }
+
+            string keyword = keyword_str.substr(start, end - start);
+
+            if (keyword.length() == 0 || keyword.length() > 60)
+            {
+                throw("Invalid\n");
+            }
+
+            for (char c : keyword)
+            {
+                if (c < 0 || c >= 128)
+                {
+                    throw("Invalid\n");
+                }
+                if (c <= 31 || c == 34)
+                {
+                    throw("Invalid\n");
+                }
+            }
+
+            if (find(temp_keywords.begin(), temp_keywords.end(), keyword) != temp_keywords.end())
+            {
+                throw("Invalid\n");
+            }
+
+            temp_keywords.push_back(keyword);
+            start = end + 1;
         }
-        else
-        {
-            keyword = keyword_str.substr(start, end - start);
-        }
-        keywords.push_back(keyword);
-        if (end == std::string::npos)
-            break;
-        start = end + 1;
-        end = keyword_str.find('|', start);
+        end++;
+    }
+
+    for (const auto &kw : temp_keywords)
+    {
+        std::array<char, 61> keyword_array;
+        memset(keyword_array.data(), 0, 61);
+        strncpy(keyword_array.data(), kw.c_str(), 60);
+        keywords.push_back(keyword_array);
     }
     return keywords;
 }
@@ -330,6 +350,7 @@ void BookManager::show(const string &str)
     if (str.empty())
     {
         book_storage.traverse();
+        return;
     }
 
     string s; // 分类
@@ -353,6 +374,9 @@ void BookManager::show(const string &str)
         throw("Invalid\n");
     }
     vector<Book> found_book;
+    vector<keyword_isbn_> book_by_keywords;
+    vector<name_author_isbn> book_by_name;
+    vector<name_author_isbn> book_by_author;
     vector<string> isbn_of_book;
     if (s == "ISBN")
     {
@@ -370,22 +394,56 @@ void BookManager::show(const string &str)
 
     if (s == "name")
     {
-        isbn_of_book = f_by_name(str.substr(pos + 1).c_str());
+        string new_name = str.substr(pos + 1);
+        if (new_name[0] != '\"' || new_name[new_name.length() - 1] != '\"')
+        {
+            throw("Invalid\n");
+        }
+        new_name.erase(new_name.size() - 1);
+        new_name.erase(new_name.begin());
+        book_by_name = f_by_name(new_name.c_str());
+        for (const auto &tmp : book_by_name)
+        {
+            isbn_of_book.push_back(tmp.ISBN);
+        }
     }
     if (s == "author")
     {
-        isbn_of_book = f_by_author(str.substr(pos + 1).c_str());
+        string new_author = str.substr(pos + 1);
+        if (new_author[0] != '\"' || new_author[new_author.length() - 1] != '\"')
+        {
+            throw("Invalid\n");
+        }
+        new_author.erase(new_author.size() - 1);
+        new_author.erase(new_author.begin());
+        book_by_author = f_by_author(new_author.c_str());
+        for (const auto &tmp : book_by_author)
+        {
+            isbn_of_book.push_back(tmp.ISBN);
+        }
     }
     if (s == "keyword")
     {
         for (int i = pos + 1; i < str.length(); i++)
-        {
+        { // no many keywords together
             if (str[i] == '|')
             {
                 throw("Invalid\n");
             }
         }
-        isbn_of_book = f_by_keyword(str.substr(pos + 1).c_str());
+        string new_kwd = str.substr(pos + 1);
+        if (new_kwd[0] != '\"' || new_kwd[new_kwd.length() - 1] != '\"')
+        {
+            throw("Invalid\n");
+        }
+        new_kwd.erase(new_kwd.size() - 1);
+        new_kwd.erase(new_kwd.begin());
+        book_by_keywords = f_by_keyword(new_kwd.c_str());
+
+        for (const auto &tmp : book_by_keywords)
+        {
+            isbn_of_book.push_back(tmp.ISBN);
+        }
     }
 
     if (isbn_of_book.empty())
@@ -415,11 +473,12 @@ void BookManager::modify(const string &str, string &selected_isbn)
     // std::cout << "str = " << str << '\n';
     while (iss >> parameter)
     {
+        // std::cout << "parameter = " << parameter << std::endl;
         if (parameter[0] != '-')
         {
             throw("Invalid\n");
         }
-
+        s.clear();
         int pos = 0;
         for (int i = 1; i < parameter.length(); i++)
         {
@@ -509,7 +568,7 @@ void BookManager::modify(const string &str, string &selected_isbn)
                 new_element += parameter[i];
             }
             string new_author = new_element;
-            strncpy(selected_book.name, new_author.c_str(), 60);
+            strncpy(selected_book.author, new_author.c_str(), 60);
             dele(selected_isbn.c_str());
             insert(selected_book);
 
@@ -534,32 +593,38 @@ void BookManager::modify(const string &str, string &selected_isbn)
             {
                 new_element += parameter[i];
             }
-            vector<string> new_keywords;
-            int cnt = 0;
-            new_keywords.emplace_back();
-            for (int i = 0; i < new_element.length(); i++)
-            {
-                // std::cout << "i = " << i << '\n';
-                if (new_element[i] == '|')
-                {
-                    for (int j = 0; j < cnt; j++)
-                    {
-                        if (new_keywords[cnt] == new_keywords[j])
-                        {
-                            // 相同的关键词
-                            throw("Invalid\n");
-                        }
-                    }
-                    cnt++;
-                    new_keywords.emplace_back();
-                    continue;
-                }
-                new_keywords[cnt] += new_element[i];
-            }
-            selected_book.keyword = new_keywords;
+
+            vector<std::array<char, 61>> new_keywords = parse_keywords(new_element);
+
+            strncpy(selected_book.keyword, new_element.c_str(), 60);
             dele(selected_isbn.c_str());
             insert(selected_book);
             vis[3] = true;
+        }
+
+        if (s == "price")
+        {
+            if (vis[4])
+            {
+                throw("Invalid");
+            }
+            if (pos == parameter.length() - 1)
+            {
+                throw("Invalid\n");
+            }
+            for (int i = pos + 1; i < parameter.length(); i++)
+            {
+                new_element += parameter[i];
+            }
+            if (!check_price(new_element))
+            {
+                throw("Invalid\n");
+            }
+            selected_book.price = std::stod(new_element);
+            dele(selected_isbn.c_str());
+            insert(selected_book);
+
+            vis[4] = true;
         }
     }
 }
