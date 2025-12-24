@@ -81,7 +81,7 @@ public:
     void delt(const char *id);
     void regist(const char *id, const char *pwd, const char *name);
     void change_pwd(const char *id, const char *new_pwd, int your_priv, const char *pre_pwd = "");
-    void select_book(const char *isbn);
+    void select_book(const char *isbn, const char *origin_isbn);
     char *get_select();
     Users get_user();
 };

@@ -19,21 +19,27 @@ int main()
 
     string op, line;
     int tmp_cnt = 0;
-    while (true)
+    while (std::cin >> op)
     {
         tmp_cnt++;
-        std::cin >> op;
         if (op == "quit" || op == "exit")
             break;
         getline(std::cin, line);
         // std::cin.ignore();
+        for (int i = 0; i < line.size(); i++)
+        {
+            if (line[i] == '\t') // 神了
+            {
+                throw("Invalid\n");
+            }
+        }
         line.erase(0, 1);
         std::istringstream iss(line);
         try
         {
             if (op == "su")
             {
-                string id, password;
+                string id, password = "";
                 iss >> id >> password;
                 // std::cout << id << " " << password << '\n';
                 user_magr.login(id.c_str(), password.c_str());
@@ -64,9 +70,16 @@ int main()
                 {
                     words.push_back(tmp);
                 }
-
+                if (words.size() < 2 || words.size() > 3)
+                {
+                    throw("Invalid\n");
+                }
                 if (words.size() == 2)
                 {
+                    if (cur_user.privilege != 7)
+                    {
+                        throw("Invalid\n");
+                    }
                     id = words[0];
                     new_pwd = words[1];
                 }
@@ -166,6 +179,10 @@ int main()
             else if (op == "select")
             {
                 Users cur_user = user_magr.get_user();
+                if (cur_user.privilege < 3)
+                {
+                    throw("Invalid\n");
+                } // 新增
                 string isbn;
                 iss >> isbn;
                 if (!book_magr.check_isbn(isbn.c_str()))
@@ -178,25 +195,39 @@ int main()
                     // std::cout << "Invalid2\n";
                     throw("Invalid\n");
                 }
-                user_magr.select_book(isbn.c_str());
+                string emptystring = "";
+                user_magr.select_book(isbn.c_str(), emptystring.c_str());
                 book_magr.select(isbn.c_str());
             }
             else if (op == "modify")
             {
-
+                // std::cout << "this modify\n";
                 Users cur_user = user_magr.get_user();
-                if (strlen(cur_user.selected_book) == 0)
+                if (cur_user.privilege < 3)
+                {
                     throw("Invalid\n");
+                } // 新增
+                // std::cout << "getuser\n";
+                if (strlen(cur_user.selected_book) == 0)
+                {
+                    // std::cout << "no select book\n";
+                    throw("Invalid\n");
+                }
                 string tmp = cur_user.selected_book;
+                string origintmp = tmp;
                 // std::cout << "modifystat\n";
                 book_magr.modify(line, tmp);
                 // std::cout << "modifyend\n";
-                user_magr.select_book(tmp.c_str());
+                user_magr.select_book(tmp.c_str(), origintmp.c_str());
             }
             else if (op == "import")
             {
                 // std::cout << "start import\n";
                 Users cur_user = user_magr.get_user();
+                if (cur_user.privilege < 3)
+                {
+                    throw("Invalid\n");
+                } // 建议新增
                 string number, tot_cost;
                 iss >> number >> tot_cost;
                 if (iss >> number)
@@ -206,6 +237,10 @@ int main()
                 book_magr.impt(number, cur_user);
 
                 double tot_money = std::stod(tot_cost);
+                if (tot_money == 0)
+                {
+                    throw("Invalid\n");
+                }
                 finance_magr.add_finance_record(tot_money, 1, cur_user.selected_book);
                 // std::cout << "end import\n";
             }

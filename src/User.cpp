@@ -3,9 +3,8 @@
 
 UserManager::UserManager()
     : user_storage("./data/Users.dat")
-{ // 拼接路径：./data/Bookstore_Users
+{
     user_storage.initialize_system();
-    // 初始化
     string id = "root";
     string pwd = "sjtu";
     Users user(id.c_str(), pwd.c_str(), id.c_str(), 7);
@@ -157,7 +156,7 @@ void UserManager::login(const char *id, const char *pwd)
             // std::cout << "no user" << std::endl;
             throw("Invalid\n");
         }
-        if (your_priv > cur_user[0].privilege)
+        if (your_priv > cur_user[0].privilege && strlen(pwd) == 0) // 神了
         {
             user_stack.push_back(cur_user[0]);
         }
@@ -203,7 +202,7 @@ void UserManager::delt(const char *id)
     }
     for (const auto &cur_user : user_stack)
     {
-        if (cur_user.UserID == id)
+        if (strcmp(cur_user.UserID, id) == 0)
         {
             throw("Invalid\n");
         }
@@ -213,6 +212,14 @@ void UserManager::delt(const char *id)
 
 void UserManager::change_pwd(const char *id, const char *new_pwd, int your_priv, const char *pre_pwd)
 {
+    if (!check_id(id) || !check_id(new_pwd))
+    {
+        throw("Invalid\n");
+    }
+    if (strlen(pre_pwd) > 0 && !check_id(pre_pwd))
+    {
+        throw("Invalid\n");
+    }
     // std::cout << "1" << std::endl;
     if (!check_priv(your_priv))
     {
@@ -227,6 +234,7 @@ void UserManager::change_pwd(const char *id, const char *new_pwd, int your_priv,
         throw("Invalid\n");
     }
     // std::cout << "3" << std::endl;
+    Users &current = user_stack.back();
     if (your_priv == 7)
     {
         // std::cout << "7" << std::endl;
@@ -234,6 +242,14 @@ void UserManager::change_pwd(const char *id, const char *new_pwd, int your_priv,
     }
     else
     {
+        if (strcmp(current.UserID, id) != 0)
+        {
+            throw("Invalid\n");
+        }
+        if (strlen(pre_pwd) == 0)
+        {
+            throw("Invalid\n");
+        }
         if (strcmp(pre_pwd, cur_user[0].Password) == 0)
         {
             strcpy(cur_user[0].Password, new_pwd);
@@ -249,8 +265,17 @@ void UserManager::change_pwd(const char *id, const char *new_pwd, int your_priv,
     UserManager::useradd(id, new_pwd, cur_user[0].privilege, cur_user[0].username, 7, 1);
 }
 
-void UserManager::select_book(const char *isbn)
+void UserManager::select_book(const char *isbn, const char *origin_isbn)
 {
+    // std::cout << "origin_isbn = " << origin_isbn << '\n';
+    for (auto it = user_stack.begin(); it != user_stack.end(); it++)
+    {
+        // std::cout << "it->selected_book = " << it->selected_book << '\n';
+        if (strcmp(it->selected_book, origin_isbn) == 0)
+        {
+            strcpy(it->selected_book, isbn);
+        }
+    }
     strcpy(user_stack.back().selected_book, isbn);
     // std::cout << "selected-this " << user_stack.back().selected_book << '\n';
 }

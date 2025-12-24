@@ -79,6 +79,7 @@ void BookManager::select(const char *isbn)
         throw("Invalid\n");
     // std::cout << "insert a book\n";
     strncpy(new_book.ISBN, isbn, 20);
+    // new_book.print();
     insert(new_book);
 }
 
@@ -90,7 +91,7 @@ void BookManager::impt(const string &num, const Users &cur_user)
     }
     int qty = std::stoi(num);
 
-    if (cur_user.selected_book[0] == '\0')
+    if (cur_user.selected_book[0] == '\0' || qty == 0)
     {
         throw("Invalid\n");
     }
@@ -468,7 +469,7 @@ void BookManager::modify(const string &str, string &selected_isbn)
     std::istringstream iss(str);
     std::string parameter;
     // 未选中放在外面判断
-    // std::cout << "statstr = " << str << '\n';
+    // std::cout << "selected_isbn = " << selected_isbn << '\n';
     vector<Book> tmp = f_by_isbn(selected_isbn.c_str());
     Book selected_book = tmp[0];
     string s;
@@ -480,6 +481,7 @@ void BookManager::modify(const string &str, string &selected_isbn)
         // std::cout << "parameter = " << parameter << std::endl;
         if (parameter[0] != '-')
         {
+            // std::cout << "--------\n";
             throw("Invalid\n");
         }
         s.clear();
@@ -495,7 +497,7 @@ void BookManager::modify(const string &str, string &selected_isbn)
         }
         string new_element = "";
 
-        // std::cout << "here" << std::endl;
+        // std::cout << s << std::endl;
         if (s == "ISBN")
         {
             if (vis[0])
@@ -596,6 +598,7 @@ void BookManager::modify(const string &str, string &selected_isbn)
 
         if (s == "price")
         {
+            // std::cout << "changeprice\n";
             if (vis[4])
             {
                 throw("Invalid");
