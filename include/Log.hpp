@@ -10,16 +10,14 @@ using std::vector;
 struct FinanceLog
 {
     int count;
-    double money;
-    bool type;
     char isbn[21];
+    double moneyadd;
+    double moneyminus;
 
-    FinanceLog() { count = 0, money = 0.00, type = 0, isbn[0] = '\0'; }
+    FinanceLog() { count = 0, isbn[0] = '\0', moneyadd = 0, moneyminus = 0; }
 
-    FinanceLog(const int count, const double money,
-               const bool type,
-               const char *isbn) : count(count), money(money),
-                                   type(type)
+    FinanceLog(const int count,
+               const char *isbn, const double moneyadd, const double moneyminus) : count(count), moneyadd(moneyadd), moneyminus(moneyminus)
     {
         std::strncpy(this->isbn, isbn, 20);
     }
@@ -27,32 +25,20 @@ struct FinanceLog
     FinanceLog &operator=(const FinanceLog &other)
     {
         count = other.count;
-        money = other.money;
-        type = other.type;
+        moneyadd = other.moneyadd;
+        moneyminus = other.moneyminus;
         std::strncpy(this->isbn, other.isbn, 20);
         return *this;
     }
 
     bool operator==(const FinanceLog &other) const
     {
-        return count == other.count &&
-               money == other.money &&
-               type == other.type &&
-               isbn == other.isbn;
+        return count == other.count;
     }
 
     bool operator<(const FinanceLog &other) const
     {
         return count < other.count;
-    }
-
-    void print()
-    {
-        if (type)
-            std::cout << "+";
-        else
-            std::cout << "-";
-        std::cout << " " << money << " ";
     }
 };
 

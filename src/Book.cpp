@@ -35,9 +35,10 @@ vector<Book> BookManager::f_by_isbn(const char *isbn)
 void BookManager::buy(const char *isbn, const std::string &num)
 {
     vector<Book> cur_book = book_storage.search_data(isbn);
+    // std::cout << "number = " << num << '\n';
     if (num.empty())
         throw("Invalid\n");
-    if (num[0] == '0' && num.length() > 1)
+    if (num[0] == '0' && num.length() >= 1)
         throw("Invalid\n");
     for (char c : num)
     {
@@ -58,6 +59,8 @@ void BookManager::buy(const char *isbn, const std::string &num)
     cur_book[0].quantity -= quest_num;
     BookManager::dele(isbn);
     BookManager::insert(cur_book[0]);
+    double tot = static_cast<double>(quest_num) * cur_book[0].price;
+    std::cout << std::fixed << std::setprecision(2) << tot << '\n';
 }
 
 void BookManager::select(const char *isbn)

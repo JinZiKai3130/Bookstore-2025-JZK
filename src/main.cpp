@@ -114,21 +114,44 @@ int main()
                 {
                     throw("Invalid\n");
                 }
-                string tmp;
+                string tmp = "";
                 int cnt = 0;
-                while (iss >> tmp)
+                if (line.empty())
                 {
-                    cnt++;
-                    if (cnt == 2)
+                    book_magr.show("");
+                    continue;
+                }
+                iss >> tmp;
+                if (tmp == "finance")
+                {
+                    string oper_num;
+                    while (iss >> oper_num)
+                    {
+                        for (char const &c : oper_num)
+                        {
+                            if (!std::isdigit(c))
+                            {
+                                throw("Invalid\n");
+                            }
+                        }
+                    }
+                    if (oper_num.empty())
+                        finance_magr.view_finance_record(0);
+                    else
+                        finance_magr.view_finance_record(std::stoi(oper_num));
+                }
+                else
+                {
+                    if (iss >> tmp)
                     {
                         throw("Invalid\n");
                     }
+                    book_magr.show(tmp);
                 }
-                book_magr.show(tmp);
             }
             else if (op == "buy")
             {
-                Users cur_user = user_magr.get_user();
+                Users cur_user = user_magr.get_user(); // 无法get则说明未登录
                 string isbn, quantity;
                 iss >> isbn >> quantity;
                 if (iss >> isbn)

@@ -367,7 +367,7 @@ public:
         return results;
     }
 
-    void traverse(const string &condition = "")
+    void traverse()
     {
         if (first_block_ptr == -1)
         {
@@ -375,8 +375,6 @@ public:
             return;
         }
         long current = first_block_ptr;
-        int total_elements = 0;
-        int block_count = 0;
 
         while (current != -1)
         {
@@ -384,25 +382,9 @@ public:
             read_storage_block(current, curr_block);
             for (int i = 0; i < curr_block.element_count; ++i)
             {
-                if (condition.length() == 0)
-                {
-                    // 遍历书本or遍历全部finance_log
-                    curr_block.value_storage[i].print();
-                }
-                else
-                {
-                    // 遍历number + 1 到最后的所有finance_log
-                    int number = std::stoi(condition);
-                    int cur_num = std::stoi(curr_block.key_storage[i]);
-                    if (number < cur_num)
-                    {
-                        curr_block.value_storage[i].print();
-                    }
-                }
-                // curr_block.value_storage[i].print();
+                curr_block.value_storage[i].print();
             }
-            total_elements += curr_block.element_count;
-            block_count++;
+            // std::cout << "current = " << current << " next = " << curr_block.next_block_ptr << '\n';
             current = curr_block.next_block_ptr;
         }
     }
