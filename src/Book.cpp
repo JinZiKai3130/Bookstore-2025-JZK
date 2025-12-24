@@ -473,6 +473,7 @@ void BookManager::modify(const string &str, string &selected_isbn)
     Book selected_book = tmp[0];
     string s;
     bool vis[5]{};
+    string newed_isbn = selected_isbn;
     // std::cout << "str = " << str << '\n';
     while (iss >> parameter)
     {
@@ -517,12 +518,7 @@ void BookManager::modify(const string &str, string &selected_isbn)
             }
             // std::cout << "before copy\n";
             strncpy(selected_book.ISBN, new_isbn.c_str(), 20);
-            // std::cout << "before delete\n";
-            dele(selected_isbn.c_str());
-            // std::cout << "before insert\n";
-            insert(selected_book);
-
-            selected_isbn = new_isbn; // 传回当前用户选择的书
+            newed_isbn = new_isbn;
             vis[0] = true;
             break;
         }
@@ -546,9 +542,6 @@ void BookManager::modify(const string &str, string &selected_isbn)
             }
             string new_name = new_element;
             strncpy(selected_book.name, new_name.c_str(), 60);
-            dele(selected_isbn.c_str());
-            // std::cout << "delete ok\n";
-            insert(selected_book);
 
             vis[1] = true;
         }
@@ -572,8 +565,6 @@ void BookManager::modify(const string &str, string &selected_isbn)
             }
             string new_author = new_element;
             strncpy(selected_book.author, new_author.c_str(), 60);
-            dele(selected_isbn.c_str());
-            insert(selected_book);
 
             vis[2] = true;
         }
@@ -600,8 +591,6 @@ void BookManager::modify(const string &str, string &selected_isbn)
             vector<std::array<char, 61>> new_keywords = parse_keywords(new_element);
 
             strncpy(selected_book.keyword, new_element.c_str(), 60);
-            dele(selected_isbn.c_str());
-            insert(selected_book);
             vis[3] = true;
         }
 
@@ -624,10 +613,11 @@ void BookManager::modify(const string &str, string &selected_isbn)
                 throw("Invalid\n");
             }
             selected_book.price = std::stod(new_element);
-            dele(selected_isbn.c_str());
-            insert(selected_book);
 
             vis[4] = true;
         }
     }
+    dele(selected_isbn.c_str());
+    insert(selected_book);
+    selected_isbn = newed_isbn;
 }
