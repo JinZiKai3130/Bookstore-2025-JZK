@@ -137,6 +137,10 @@ int main()
                 iss >> tmp;
                 if (tmp == "finance")
                 {
+                    if (cur_user.privilege < 7)
+                    {
+                        throw("Invalid\n");
+                    }
                     string oper_num;
                     while (iss >> oper_num)
                     {

@@ -3,9 +3,21 @@
 
 FinanceLogManager::FinanceLogManager() : finance_storage("./data/finance_storage.dat")
 {
-    finance_total_count = 0;
     finance_storage.initialize_system();
-    finance_storage.add_data("0", FinanceLog());
+
+    std::ifstream count_file("./data/finance_count.dat", std::ios::binary);
+    if (count_file.is_open() && count_file.read(reinterpret_cast<char *>(&finance_total_count), sizeof(finance_total_count)))
+    {
+        count_file.close();
+    }
+    else
+    {
+        finance_total_count = 0;
+        finance_storage.add_data("0", FinanceLog());
+        std::ofstream out_file("./data/finance_count.dat", std::ios::binary);
+        out_file.write(reinterpret_cast<char *>(&finance_total_count), sizeof(finance_total_count));
+        out_file.close();
+    }
 }
 
 void FinanceLogManager::add_finance_record(const double &money, const bool type, const char *isbn)
@@ -22,6 +34,10 @@ void FinanceLogManager::add_finance_record(const double &money, const bool type,
     }
     std::string string_count = std::to_string(finance_total_count);
     finance_storage.add_data(string_count, lastlog[0]);
+
+    std::ofstream out_file("./data/finance_count.dat", std::ios::binary);
+    out_file.write(reinterpret_cast<char *>(&finance_total_count), sizeof(finance_total_count));
+    out_file.close();
 }
 
 void FinanceLogManager::view_finance_record(const int &number)
