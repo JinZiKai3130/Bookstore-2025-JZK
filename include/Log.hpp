@@ -118,9 +118,11 @@ class FinanceLogManager
 {
     int finance_total_count;
     BlockStorageSystem<FinanceLog> finance_storage;
+    std::fstream finance_count_file;
 
 public:
     FinanceLogManager();
+    ~FinanceLogManager();
     void add_finance_record(const double &money,
                             const bool type,
                             const char *isbn);

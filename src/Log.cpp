@@ -5,18 +5,35 @@ FinanceLogManager::FinanceLogManager() : finance_storage("./data/finance_storage
 {
     finance_storage.initialize_system();
 
-    std::ifstream count_file("./data/finance_count.dat", std::ios::binary);
-    if (count_file.is_open() && count_file.read(reinterpret_cast<char *>(&finance_total_count), sizeof(finance_total_count)))
+    finance_count_file.open("./data/finance_count.dat", std::ios::binary | std::ios::in | std::ios::out);
+    if (!finance_count_file.is_open())
     {
-        count_file.close();
+        finance_count_file.clear();
+        finance_count_file.open("./data/finance_count.dat", std::ios::binary | std::ios::out | std::ios::trunc);
+        finance_count_file.close();
+        finance_count_file.open("./data/finance_count.dat", std::ios::binary | std::ios::in | std::ios::out);
     }
-    else
+
+    finance_count_file.seekg(0);
+    if (!finance_count_file.read(reinterpret_cast<char *>(&finance_total_count), sizeof(finance_total_count)))
     {
         finance_total_count = 0;
         finance_storage.add_data("0", FinanceLog());
-        std::ofstream out_file("./data/finance_count.dat", std::ios::binary);
-        out_file.write(reinterpret_cast<char *>(&finance_total_count), sizeof(finance_total_count));
-        out_file.close();
+        finance_count_file.clear();
+        finance_count_file.seekp(0);
+        finance_count_file.write(reinterpret_cast<char *>(&finance_total_count), sizeof(finance_total_count));
+        finance_count_file.flush();
+    }
+}
+
+FinanceLogManager::~FinanceLogManager()
+{
+    if (finance_count_file.is_open())
+    {
+        finance_count_file.seekp(0);
+        finance_count_file.write(reinterpret_cast<char *>(&finance_total_count), sizeof(finance_total_count));
+        finance_count_file.flush();
+        finance_count_file.close();
     }
 }
 
