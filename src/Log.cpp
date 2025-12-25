@@ -1,17 +1,17 @@
 #include "Log.hpp"
 #include <iomanip>
 
-FinanceLogManager::FinanceLogManager() : finance_storage("./data/finance_storage.dat")
+FinanceLogManager::FinanceLogManager() : finance_storage("finance_storage.dat")
 {
     finance_storage.initialize_system();
 
-    finance_count_file.open("./data/finance_count.dat", std::ios::binary | std::ios::in | std::ios::out);
+    finance_count_file.open("finance_count.dat", std::ios::binary | std::ios::in | std::ios::out);
     if (!finance_count_file.is_open())
     {
         finance_count_file.clear();
-        finance_count_file.open("./data/finance_count.dat", std::ios::binary | std::ios::out | std::ios::trunc);
+        finance_count_file.open("finance_count.dat", std::ios::binary | std::ios::out | std::ios::trunc);
         finance_count_file.close();
-        finance_count_file.open("./data/finance_count.dat", std::ios::binary | std::ios::in | std::ios::out);
+        finance_count_file.open("finance_count.dat", std::ios::binary | std::ios::in | std::ios::out);
     }
 
     finance_count_file.seekg(0);

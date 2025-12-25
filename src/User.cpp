@@ -2,7 +2,7 @@
 #include <cstring>
 
 UserManager::UserManager()
-    : user_storage("./data/Users.dat")
+    : user_storage("Users.dat")
 {
     user_storage.initialize_system();
     auto check = user_storage.search_data("root");

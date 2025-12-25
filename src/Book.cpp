@@ -1,10 +1,10 @@
 #include "Book.hpp"
 #include "User.hpp"
 
-BookManager::BookManager() : book_storage("./data/book_storage.dat"),
-                             name_isbn("./data/name_isbn.dat"),
-                             author_isbn("./data/author_isbn.dat"),
-                             keyword_isbn("./data/keyword_isbn.dat")
+BookManager::BookManager() : book_storage("book_storage.dat"),
+                             name_isbn("name_isbn.dat"),
+                             author_isbn("author_isbn.dat"),
+                             keyword_isbn("keyword_isbn.dat")
 {
     book_storage.initialize_system();
     name_isbn.initialize_system();

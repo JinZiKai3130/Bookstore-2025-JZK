@@ -41,7 +41,7 @@ def clean_data_files():
         except Exception as e:
             print(f"警告: 清理数据目录失败: {e}")
     # 重新创建空目录
-    os.makedirs(os.path.join(DATA_DIR, 'data'), exist_ok=True)
+    os.makedirs(DATA_DIR, exist_ok=True)
 
 def load_config():
     """加载配置文件"""
