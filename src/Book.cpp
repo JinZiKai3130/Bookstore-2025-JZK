@@ -50,7 +50,7 @@ void BookManager::buy(const char *isbn, const std::string &num)
     int quest_num = std::stoi(num);
     if (cur_book.empty())
     {
-        return;
+        throw("Invalid\n");
     }
     if (quest_num > cur_book[0].quantity)
     { // book insufficient

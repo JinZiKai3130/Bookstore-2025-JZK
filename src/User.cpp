@@ -5,6 +5,9 @@ UserManager::UserManager()
     : user_storage("./data/Users.dat")
 {
     user_storage.initialize_system();
+    auto check = user_storage.search_data("root");
+    if (!check.empty())
+        return;
     string id = "root";
     string pwd = "sjtu";
     Users user(id.c_str(), pwd.c_str(), id.c_str(), 7);
@@ -242,10 +245,6 @@ void UserManager::change_pwd(const char *id, const char *new_pwd, int your_priv,
     }
     else
     {
-        if (strcmp(current.UserID, id) != 0)
-        {
-            throw("Invalid\n");
-        }
         if (strlen(pre_pwd) == 0)
         {
             throw("Invalid\n");
