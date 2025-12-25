@@ -57,6 +57,10 @@ void FinanceLogManager::view_finance_record(const int &number)
     int number_ = number;
     if (number_ == 0)
         number_ = finance_total_count;
+    if (number_ > finance_total_count)
+    {
+        throw("Invalid\n");
+    }
     std::vector<FinanceLog> taillog = finance_storage.search_data(std::to_string(finance_total_count));
     std::vector<FinanceLog> headlog = finance_storage.search_data(std::to_string(finance_total_count - number_));
     std::cout << std::fixed << std::setprecision(2) << "+ " << taillog[0].moneyadd - headlog[0].moneyadd << " - " << taillog[0].moneyminus - headlog[0].moneyminus << '\n';

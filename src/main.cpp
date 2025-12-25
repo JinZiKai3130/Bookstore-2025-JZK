@@ -33,7 +33,7 @@ int main()
                 throw("Invalid\n");
             }
         }
-        line.erase(0, 1);
+        if (!line.empty()) line.erase(0, 1);
         std::istringstream iss(line);
         try
         {
