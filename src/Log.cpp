@@ -3,8 +3,6 @@
 
 FinanceLogManager::FinanceLogManager() : finance_storage("finance_storage.dat")
 {
-    finance_storage.initialize_system();
-
     finance_count_file.open("finance_count.dat", std::ios::binary | std::ios::in | std::ios::out);
     if (!finance_count_file.is_open())
     {

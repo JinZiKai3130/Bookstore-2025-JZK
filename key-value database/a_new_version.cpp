@@ -1,17 +1,22 @@
 #include <iostream>
 #include <fstream>
-#include <cstring>
 #include <vector>
+#include <cstring>
 #include <algorithm>
+#include <string>
 
+using std::fstream;
+using std::ifstream;
+using std::ofstream;
+using std::string;
+using std::vector;
 const int max_block_size = 1024;
-const char* DATA_FILE = "mydata.dat";
 
 template <typename T>
 struct Entry {
     char index[65];
     T value;
-    Entry(){
+    Entry() {
         value = 0;
         memset(index, 0, sizeof(index));
     }
@@ -32,31 +37,32 @@ struct Entry {
 
 template <typename T>
 struct Blockhead {
-    int next_block;
-    int count;
+    int next_block = -1;
+    int count = 0;
     Entry<T> max_entry;
-    Blockhead() : next_block(-1), count(0) {}
+    Blockhead(){}
 };
 
 template <typename T>
 struct Block {
-    int next_block;
-    int count;
+    int next_block = -1;
+    int count = 0;
     Entry<T> max_entry;
     Entry<T> entries[max_block_size];
-    Block() : next_block(-1), count(0) {}
+    Block(){}
 };
 
 template <typename T>
 class StorageBlockSystem {
 private:
     std::fstream file;
+    std::string file_path;
     int first_block;
-    int free_block;
+    int block_sum;
     
-    void writeBlock(int pos, const Block& block) {
-        file.seekp(pos * sizeof(Block));
-        file.write(reinterpret_cast<const char*>(&block), sizeof(Block));
+    void writeBlock(int pos, const Block<T>& block) {
+        file.seekp(pos * sizeof(Block<T>));
+        file.write(reinterpret_cast<const char*>(&block), sizeof(Block<T>));
     }
     
     void readBlock(int pos, Block<T>& block) {
@@ -64,9 +70,9 @@ private:
         file.read(reinterpret_cast<char*>(&block), sizeof(Block<T>));
     }
     
-    void readBlockhead(int pos, Blockhead<T>& meta) {
-        file.seekg(pos * sizeof(Blockhead<T>));
-        file.read(reinterpret_cast<char*>(&meta), sizeof(Blockhead<T>));
+    void readBlockhead(int pos, Blockhead<T>& block_head) {
+        file.seekg(pos * sizeof(Block<T>));
+        file.read(reinterpret_cast<char*>(&block_head), sizeof(Blockhead<T>));
     }
     
     void splitBlock(int block_pos, Block<T>& block) {
@@ -79,33 +85,31 @@ private:
         }
         block.count = mid;
         block.max_entry = block.entries[block.count - 1];
-
         new_block.max_entry = new_block.entries[new_block.count - 1];
+
         new_block.next_block = block.next_block;
-        block.next_block = free_block;
-        
+        block.next_block = block_sum;
         writeBlock(block_pos, block);
-        writeBlock(free_block, new_block);
-        free_block++;
+        writeBlock(block_sum, new_block);
+        block_sum++;
     }
     
 public:
-    StorageBlockSystem() : first_block(0), free_block(1) {
-        std::ifstream test(DATA_FILE);
-        bool exists = test.good();
+    StorageBlockSystem(std::string file_path) : first_block(0), block_sum(1), file_path(file_path) {
+        std::ifstream test(file_path);
+        bool exist = test.good();
         test.close();
-        if (exists) {
-            file.open(DATA_FILE, std::ios::in | std::ios::out | std::ios::binary);
+        if (exist) {
+            file.open(file_path, std::ios::in | std::ios::out | std::ios::binary);
             file.seekg(0);
             Block<T> first;
             readBlock(0, first);
-            free_block = 0;
             file.seekg(0, std::ios::end);
-            int file_size = file.tellg();
-            free_block = file_size / sizeof(Block<T>);
+            long long file_size = file.tellg();
+            block_sum = file_size / sizeof(Block<T>);
         }
         else {
-            file.open(DATA_FILE, std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc);
+            file.open(file_path, std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc);
             Block<T> first;
             writeBlock(0, first);
         }
@@ -142,7 +146,7 @@ public:
                 readBlock(cur_pos, cur_block);
                 for (int i = 0; i < cur_block.count; i++) {
                     if (cur_block.entries[i] == new_entry) {
-                        return;
+                        return; // 重复的直接return
                     }
                 }
                 int insert_pos = cur_block.count;
@@ -153,14 +157,13 @@ public:
                     }
                 }
                 for (int i = cur_block.count; i > insert_pos; i--) {
-                    cur_block.entries[i] = cur_block.entries[i - 1];
+                    cur_block.entries[i] = cur_block.entries[i - 1]; // move backwards
                 }
                 cur_block.entries[insert_pos] = new_entry;
                 cur_block.count++;
-                
                 cur_block.max_entry = cur_block.entries[cur_block.count - 1];
                 
-                if (cur_block.count >= max_block_size - 2) { // 不能过大
+                if (cur_block.count >= max_block_size - 2) { // 不能过大，否则裂
                     splitBlock(cur_pos, cur_block);
                 }
                 else {
@@ -169,8 +172,8 @@ public:
                 return;
             }
             
-            cur_pos = meta.next_block;
-            readBlockMeta(cur_pos, meta);
+            cur_pos = block_head.next_block;
+            readBlockhead(cur_pos, block_head);
         }
     }
     
@@ -201,19 +204,18 @@ public:
                         cur_block.max_entry = cur_block.entries[cur_block.count - 1];
                     }
                     else {
-                        cur_block.max_entry = Entry();
+                        cur_block.max_entry = Entry<T>();
                     }
                     
                     writeBlock(current_pos, cur_block);
                     return;
                 }
             }
-            
             current_pos = cur_block.next_block;
         }
     }
     
-    std::vector<T> find(const char* index) {
+    std::vector<T> search_data(const char* index) {
         std::vector<T> results;
         int pos = 0;
         while (pos != -1) {
@@ -229,6 +231,7 @@ public:
                 if (strcmp(cur_block.entries[i].index, index) == 0) {
                     results.push_back(cur_block.entries[i].value);
                 }
+                else if (strcmp(cur_block.entries[i].index, index) > 0) break;
             }
             pos = cur_block.next_block;
         }
@@ -238,28 +241,30 @@ public:
 };
 
 int main() {
+    std::ios::sync_with_stdio(false);
+    std::cin.tie(0);
     int n;
     std::cin >> n;
-    StorageBlockSystem<int> data;
-    for (int i = 0; i < n; i++) {
+    StorageBlockSystem<int> dat("testdata.dat");
+    for (int i = 1; i <= n; i++) {
         std::string op;
         std::cin >> op;
         if (op == "insert") {
             std::string index;
             int value;
             std::cin >> index >> value;
-            data.insert(index.c_str(), value);
+            dat.add_data(index.c_str(), value);
         }
         else if (op == "delete") {
             std::string index;
             int value;
             std::cin >> index >> value;
-            data.remove(index.c_str(), value);
+            dat.remove_data(index.c_str(), value);
         }
         else if (op == "find") {
             std::string index;
             std::cin >> index;
-            std::vector<int> result = data.find(index.c_str());
+            std::vector<int> result = dat.search_data(index.c_str());
             if (result.empty()) {
                 std::cout << "null";
             }

@@ -1,393 +1,254 @@
 #ifndef BLOCK_STORAGE_H
 #define BLOCK_STORAGE_H
-
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <cstring>
 #include <algorithm>
+#include <cstring>
+#include <fstream>
+#include <iostream>
 #include <string>
-
+#include <vector>
 using std::fstream;
 using std::ifstream;
 using std::ofstream;
 using std::string;
 using std::vector;
-const int MAX_KEY_SIZE = 64;
-const int MAX_BLOCK_CAPACITY = 400;
+const int max_block_size = 1024;
 
-template <typename T>
-struct StorageBlock
-{
-    int element_count;
-    long next_block_ptr;
-    long prev_block_ptr;
+template <typename T> struct Entry {
+  char index[65];
+  T value;
+  Entry() { memset(index, 0, sizeof(index)); }
+  Entry(const char *new_idx, T val) : value(val) {
+    memset(index, 0, sizeof(index));
+    strncpy(index, new_idx, 64);
+  }
 
-    char key_storage[MAX_BLOCK_CAPACITY][MAX_KEY_SIZE + 1]{};
-    T value_storage[MAX_BLOCK_CAPACITY]{};
+  void print() { value.print(); }
 
-    StorageBlock() : element_count(0), next_block_ptr(-1), prev_block_ptr(-1)
-    {
-        for (int i = 0; i < MAX_BLOCK_CAPACITY; ++i)
-        {
-            key_storage[i][0] = '\0';
-        }
-    }
+  bool operator<(const Entry &other) const {
+    if (strcmp(index, other.index) != 0)
+      return strcmp(index, other.index) < 0;
+    return value < other.value;
+  }
 
-    bool is_full() const { return element_count >= MAX_BLOCK_CAPACITY; }
-    bool is_sparse() const { return element_count < MAX_BLOCK_CAPACITY / 4 && element_count > 0; }
-
-    int locate_key_position(const std::string &target_key)
-    {
-        int left = 0, right = element_count - 1;
-        while (left <= right)
-        {
-            int middle = (left + right) / 2;
-            int cmp = strcmp(key_storage[middle], target_key.c_str());
-            if (cmp == 0)
-                return middle;
-            else if (cmp < 0)
-                left = middle + 1;
-            else
-                right = middle - 1;
-        }
-        return left;
-    }
-
-    void add_element(int position, const std::string &new_key, const T &new_value)
-    {
-        for (int i = element_count - 1; i >= position; --i)
-        {
-            strcpy(key_storage[i + 1], key_storage[i]);
-            value_storage[i + 1] = value_storage[i];
-        }
-        strncpy(key_storage[position], new_key.c_str(), MAX_KEY_SIZE);
-        key_storage[position][MAX_KEY_SIZE] = '\0';
-        value_storage[position] = new_value;
-        element_count++;
-    }
-
-    void remove_element(int position)
-    {
-        for (int i = position; i < element_count - 1; ++i)
-        {
-            strcpy(key_storage[i], key_storage[i + 1]);
-            value_storage[i] = value_storage[i + 1];
-        }
-        element_count--;
-        if (element_count >= 0)
-        {
-            key_storage[element_count][0] = '\0';
-        }
-    }
+  bool operator==(const Entry &other) const {
+    return (strcmp(index, other.index) == 0 && value == other.value);
+  }
 };
 
-template <typename T>
-class BlockStorageSystem
-{
+template <typename T> struct Blockhead {
+  int next_block = -1;
+  int count = 0;
+  Entry<T> max_entry;
+  Blockhead() {}
+};
+
+template <typename T> struct Block {
+  int next_block = -1;
+  int count = 0;
+  Entry<T> max_entry;
+  Entry<T> entries[max_block_size];
+  Block() {}
+};
+
+template <typename T> class BlockStorageSystem {
 private:
-    std::fstream data_file;
-    std::string file_name;
-    long first_block_ptr;
-    long last_block_ptr;
-    long free_blocks_head;
+  std::fstream file;
+  std::string file_path;
+  int first_block;
+  int block_sum;
 
-    void read_storage_block(long position, StorageBlock<T> &block)
-    {
-        data_file.seekg(position);
-        data_file.read(reinterpret_cast<char *>(&block), sizeof(block));
-    }
+  void writeBlock(int pos, const Block<T> &block) {
+    file.seekp(pos * sizeof(Block<T>));
+    file.write(reinterpret_cast<const char *>(&block), sizeof(Block<T>));
+  }
 
-    void write_storage_block(long position, StorageBlock<T> &block)
-    {
-        data_file.seekp(position);
-        data_file.write(reinterpret_cast<char *>(&block), sizeof(block));
-    }
+  void readBlock(int pos, Block<T> &block) {
+    file.seekg(pos * sizeof(Block<T>));
+    file.read(reinterpret_cast<char *>(&block), sizeof(Block<T>));
+  }
 
-    long allocate_new_block()
-    {
-        if (free_blocks_head != -1)
-        {
-            long pos = free_blocks_head;
-            StorageBlock<T> buf;
-            read_storage_block(pos, buf);
-            free_blocks_head = buf.next_block_ptr;
-            return pos;
-        }
-        data_file.seekp(0, std::ios::end);
-        long pos = data_file.tellp();
-        StorageBlock<T> new_block;
-        write_storage_block(pos, new_block);
-        return pos;
-    }
+  void readBlockhead(int pos, Blockhead<T> &block_head) {
+    file.seekg(pos * sizeof(Block<T>));
+    file.read(reinterpret_cast<char *>(&block_head), sizeof(Blockhead<T>));
+  }
 
-    void deallocate_block(long position)
-    {
-        StorageBlock<T> buf;
-        read_storage_block(position, buf);
-        buf.next_block_ptr = free_blocks_head;
-        free_blocks_head = position;
-        write_storage_block(position, buf);
-    }
+  void splitBlock(int block_pos, Block<T> &block) {
+    Block<T> new_block;
+    int mid = block.count / 2;
 
-    void split_storage_block(long position, StorageBlock<T> &block)
-    {
-        long new_pos = allocate_new_block();
-        StorageBlock<T> new_block;
-        int split_idx = block.element_count / 2;
-        for (int i = split_idx; i < block.element_count; ++i)
-        {
-            strncpy(new_block.key_storage[new_block.element_count], block.key_storage[i], MAX_KEY_SIZE);
-            new_block.key_storage[new_block.element_count][MAX_KEY_SIZE] = '\0';
-            new_block.value_storage[new_block.element_count] = block.value_storage[i];
-            new_block.element_count++;
-        }
-        block.element_count = split_idx;
-        new_block.next_block_ptr = block.next_block_ptr;
-        new_block.prev_block_ptr = position;
-        if (block.next_block_ptr != -1)
-        {
-            StorageBlock<T> next_block;
-            read_storage_block(block.next_block_ptr, next_block);
-            next_block.prev_block_ptr = new_pos;
-            write_storage_block(block.next_block_ptr, next_block);
-        }
-        block.next_block_ptr = new_pos;
-        if (last_block_ptr == position)
-            last_block_ptr = new_pos;
-        write_storage_block(position, block);
-        write_storage_block(new_pos, new_block);
+    new_block.count = block.count - mid;
+    for (int i = 0; i < new_block.count; i++) {
+      new_block.entries[i] = block.entries[mid + i];
     }
+    block.count = mid;
+    block.max_entry = block.entries[block.count - 1];
+    new_block.max_entry = new_block.entries[new_block.count - 1];
 
-    void attempt_block_merge(long left_pos, long right_pos)
-    {
-        if (left_pos == -1 || right_pos == -1)
-            return;
-        StorageBlock<T> left_block, right_block;
-        read_storage_block(left_pos, left_block);
-        read_storage_block(right_pos, right_block);
-        if (left_block.element_count + right_block.element_count <= MAX_BLOCK_CAPACITY)
-        {
-            for (int i = 0; i < right_block.element_count; ++i)
-            {
-                strncpy(left_block.key_storage[left_block.element_count], right_block.key_storage[i], MAX_KEY_SIZE);
-                left_block.key_storage[left_block.element_count][MAX_KEY_SIZE] = '\0';
-                left_block.value_storage[left_block.element_count] = right_block.value_storage[i];
-                left_block.element_count++;
-            }
-            left_block.next_block_ptr = right_block.next_block_ptr;
-            if (right_block.next_block_ptr != -1)
-            {
-                StorageBlock<T> next_block;
-                read_storage_block(right_block.next_block_ptr, next_block);
-                next_block.prev_block_ptr = left_pos;
-                write_storage_block(right_block.next_block_ptr, next_block);
-            }
-            if (last_block_ptr == right_pos)
-                last_block_ptr = left_pos;
-            if (first_block_ptr == right_pos)
-                first_block_ptr = left_pos;
-            write_storage_block(left_pos, left_block);
-            deallocate_block(right_pos);
-        }
-    }
-
-    long find_appropriate_block(const std::string &target_key)
-    {
-        if (first_block_ptr == -1)
-            return -1;
-        long current = first_block_ptr;
-        while (current != -1)
-        {
-            StorageBlock<T> curr_block;
-            read_storage_block(current, curr_block);
-            if (curr_block.element_count > 0 && strcmp(target_key.c_str(), curr_block.key_storage[curr_block.element_count - 1]) <= 0)
-            {
-                return current;
-            }
-            if (curr_block.next_block_ptr == -1)
-                return current;
-            current = curr_block.next_block_ptr;
-        }
-        return last_block_ptr;
-    }
+    new_block.next_block = block.next_block;
+    block.next_block = block_sum;
+    writeBlock(block_pos, block);
+    writeBlock(block_sum, new_block);
+    block_sum++;
+  }
 
 public:
-    BlockStorageSystem(const std::string &filename)
-        : first_block_ptr(-1), last_block_ptr(-1), free_blocks_head(-1), file_name(filename) {}
-
-    ~BlockStorageSystem()
-    {
-        if (data_file.is_open())
-        {
-            data_file.seekp(0);
-            data_file.write(reinterpret_cast<char *>(&first_block_ptr), sizeof(long));
-            data_file.write(reinterpret_cast<char *>(&last_block_ptr), sizeof(long));
-            data_file.write(reinterpret_cast<char *>(&free_blocks_head), sizeof(long));
-            data_file.close();
-        }
+  BlockStorageSystem(std::string file_path)
+      : first_block(0), block_sum(1), file_path(file_path) {
+    std::ifstream test(file_path);
+    bool exist = test.good();
+    test.close();
+    if (exist) {
+      file.open(file_path, std::ios::in | std::ios::out | std::ios::binary);
+      file.seekg(0);
+      Block<T> first;
+      readBlock(0, first);
+      file.seekg(0, std::ios::end);
+      long long file_size = file.tellg();
+      block_sum = file_size / sizeof(Block<T>);
+    } else {
+      file.open(file_path, std::ios::in | std::ios::out | std::ios::binary |
+                               std::ios::trunc);
+      Block<T> first;
+      writeBlock(0, first);
     }
+  }
 
-    void initialize_system()
-    {
-        data_file.open(file_name, std::ios::binary | std::ios::in | std::ios::out);
-        if (!data_file.is_open())
-        {
-            data_file.open(file_name, std::ios::binary | std::ios::out | std::ios::trunc);
-            data_file.close();
-            data_file.open(file_name, std::ios::binary | std::ios::in | std::ios::out);
-
-            data_file.seekp(0);
-            data_file.write(reinterpret_cast<char *>(&first_block_ptr), sizeof(long));
-            data_file.write(reinterpret_cast<char *>(&last_block_ptr), sizeof(long));
-            data_file.write(reinterpret_cast<char *>(&free_blocks_head), sizeof(long));
-        }
-        else
-        {
-            data_file.seekg(0);
-            data_file.read(reinterpret_cast<char *>(&first_block_ptr), sizeof(long));
-            data_file.read(reinterpret_cast<char *>(&last_block_ptr), sizeof(long));
-            data_file.read(reinterpret_cast<char *>(&free_blocks_head), sizeof(long));
-        }
+  ~BlockStorageSystem() {
+    if (file.is_open()) {
+      file.close();
     }
+  }
 
-    void add_data(const std::string &key, const T &value)
-    {
-        if (first_block_ptr == -1)
-        {
-            first_block_ptr = allocate_new_block();
-            last_block_ptr = first_block_ptr;
-            StorageBlock<T> new_block;
-            strncpy(new_block.key_storage[0], key.c_str(), MAX_KEY_SIZE);
-            new_block.key_storage[0][MAX_KEY_SIZE] = '\0';
-            new_block.value_storage[0] = value;
-            new_block.element_count = 1;
-            write_storage_block(first_block_ptr, new_block);
+  void add_data(const std::string &index, T value) {
+    Entry<T> new_entry(index.c_str(), value);
+
+    int cur_pos = 0;
+    Blockhead<T> block_head;
+    readBlockhead(cur_pos, block_head);
+
+    while (true) {
+      bool flag = false;
+
+      if (block_head.count == 0) {
+        flag = true;
+      } else if (new_entry < block_head.max_entry) {
+        flag = true;
+      } else if (block_head.next_block == -1) {
+        flag = true;
+      }
+
+      if (flag) {
+        Block<T> cur_block;
+        readBlock(cur_pos, cur_block);
+        for (int i = 0; i < cur_block.count; i++) {
+          if (cur_block.entries[i] == new_entry) {
             return;
+          }
         }
-        long pos = find_appropriate_block(key);
-        if (pos == -1)
-            pos = last_block_ptr;
-        StorageBlock<T> target_block;
-        read_storage_block(pos, target_block);
+        int insert_pos = cur_block.count;
+        for (int i = 0; i < cur_block.count; i++) {
+          if (new_entry < cur_block.entries[i]) {
+            insert_pos = i;
+            break;
+          }
+        }
+        for (int i = cur_block.count; i > insert_pos; i--) {
+          cur_block.entries[i] = cur_block.entries[i - 1];
+        }
+        cur_block.entries[insert_pos] = new_entry;
+        cur_block.count++;
+        cur_block.max_entry = cur_block.entries[cur_block.count - 1];
 
-        for (int i = 0; i < target_block.element_count; ++i)
-        {
-            if (strcmp(target_block.key_storage[i], key.c_str()) == 0 && target_block.value_storage[i] == value)
-            {
-                return;
-            }
+        if (cur_block.count >= max_block_size - 2) {
+          splitBlock(cur_pos, cur_block);
+        } else {
+          writeBlock(cur_pos, cur_block);
         }
+        return;
+      }
 
-        int insert_pos = target_block.locate_key_position(key);
-        target_block.add_element(insert_pos, key, value);
-        if (target_block.is_full())
-        {
-            write_storage_block(pos, target_block);
-            split_storage_block(pos, target_block);
-        }
-        else
-        {
-            write_storage_block(pos, target_block);
-            if (target_block.is_sparse() && target_block.prev_block_ptr != -1)
-            {
-                attempt_block_merge(target_block.prev_block_ptr, pos);
-            }
-        }
+      cur_pos = block_head.next_block;
+      readBlockhead(cur_pos, block_head);
     }
+  }
 
-    void remove_data(const std::string &key, const T &value)
-    {
-        if (first_block_ptr == -1)
-            return;
-        long current = first_block_ptr;
-        bool found = false;
-        while (current != -1 && !found)
-        {
-            StorageBlock<T> curr_block;
-            read_storage_block(current, curr_block);
-            for (int i = 0; i < curr_block.element_count; ++i)
-            {
-                if (strcmp(curr_block.key_storage[i], key.c_str()) == 0 && curr_block.value_storage[i] == value)
-                {
-                    curr_block.remove_element(i);
-                    write_storage_block(current, curr_block);
-                    found = true;
-                    if (curr_block.is_sparse())
-                    {
-                        if (curr_block.prev_block_ptr != -1)
-                        {
-                            attempt_block_merge(curr_block.prev_block_ptr, current);
-                        }
-                        else if (curr_block.next_block_ptr != -1)
-                        {
-                            StorageBlock<T> next_block;
-                            read_storage_block(curr_block.next_block_ptr, next_block);
-                            if (next_block.is_sparse())
-                            {
-                                attempt_block_merge(current, curr_block.next_block_ptr);
-                            }
-                        }
-                    }
-                    break;
-                }
-            }
-            current = curr_block.next_block_ptr;
+  void remove_data(const std::string &index, T value) {
+    Entry<T> target(index.c_str(), value);
+    int current_pos = 0;
+
+    while (current_pos != -1) {
+      Blockhead<T> block_head;
+      readBlockhead(current_pos, block_head);
+
+      if (block_head.count > 0 && block_head.max_entry < target) {
+        current_pos = block_head.next_block;
+        continue;
+      }
+      Block<T> cur_block;
+      readBlock(current_pos, cur_block);
+
+      for (int i = 0; i < cur_block.count; i++) {
+        if (cur_block.entries[i] == target) {
+          for (int j = i; j < cur_block.count - 1; j++) {
+            cur_block.entries[j] = cur_block.entries[j + 1];
+          }
+          cur_block.count--;
+
+          if (cur_block.count > 0) {
+            cur_block.max_entry = cur_block.entries[cur_block.count - 1];
+          } else {
+            cur_block.max_entry = Entry<T>();
+          }
+
+          writeBlock(current_pos, cur_block);
+          return;
         }
+      }
+      current_pos = cur_block.next_block;
     }
+  }
 
-    std::vector<T> search_data(const std::string &key)
-    {
-        std::vector<T> results;
-        if (first_block_ptr == -1)
-            return results;
-        long current = first_block_ptr;
-        while (current != -1)
-        {
-            StorageBlock<T> curr_block;
-            read_storage_block(current, curr_block);
-            if (curr_block.element_count > 0 && strcmp(curr_block.key_storage[0], key.c_str()) > 0)
-            {
-                break;
-            }
-            for (int i = 0; i < curr_block.element_count; ++i)
-            {
-                if (strcmp(curr_block.key_storage[i], key.c_str()) == 0)
-                {
-                    results.push_back(curr_block.value_storage[i]);
-                }
-                else if (strcmp(curr_block.key_storage[i], key.c_str()) > 0)
-                {
-                    break;
-                }
-            }
-            current = curr_block.next_block_ptr;
-        }
-        std::sort(results.begin(), results.end());
-        return results;
+  std::vector<T> search_data(const std::string &index) {
+    std::vector<T> results;
+    int pos = 0;
+    while (pos != -1) {
+      Blockhead<T> block_head;
+      readBlockhead(pos, block_head);
+      if (block_head.count > 0 &&
+          strcmp(index.c_str(), block_head.max_entry.index) > 0) {
+        pos = block_head.next_block;
+        continue;
+      }
+      Block<T> cur_block;
+      readBlock(pos, cur_block);
+      for (int i = 0; i < cur_block.count; i++) {
+        if (strcmp(cur_block.entries[i].index, index.c_str()) == 0) {
+          results.push_back(cur_block.entries[i].value);
+        } else if (strcmp(cur_block.entries[i].index, index.c_str()) > 0)
+          break;
+      }
+      pos = cur_block.next_block;
     }
+    std::sort(results.begin(), results.end());
+    return results;
+  }
 
-    void traverse()
-    {
-        if (first_block_ptr == -1)
-        {
-            std::cout << '\n';
-            return;
-        }
-        long current = first_block_ptr;
-
-        while (current != -1)
-        {
-            StorageBlock<T> curr_block;
-            read_storage_block(current, curr_block);
-            for (int i = 0; i < curr_block.element_count; ++i)
-            {
-                curr_block.value_storage[i].print();
-            }
-            // std::cout << "current = " << current << " next = " << curr_block.next_block_ptr << '\n';
-            current = curr_block.next_block_ptr;
-        }
+  void traverse() {
+    if (block_sum == 0) {
+      std::cout << '\n';
+      return;
     }
+    int current = 0; // first_block
+
+    while (current != -1) {
+      Block<T> cur_block;
+      readBlock(current, cur_block);
+      for (int i = 0; i < cur_block.count; ++i) {
+        cur_block.entries[i].print();
+      }
+      current = cur_block.next_block;
+    }
+  }
 };
 
 #endif // BLOCK_STORAGE_H

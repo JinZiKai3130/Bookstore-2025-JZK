@@ -6,10 +6,6 @@ BookManager::BookManager() : book_storage("book_storage.dat"),
                              author_isbn("author_isbn.dat"),
                              keyword_isbn("keyword_isbn.dat")
 {
-    book_storage.initialize_system();
-    name_isbn.initialize_system();
-    author_isbn.initialize_system();
-    keyword_isbn.initialize_system();
 }
 
 vector<name_author_isbn> BookManager::f_by_name(const char *name)
