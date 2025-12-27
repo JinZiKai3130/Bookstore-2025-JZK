@@ -237,7 +237,7 @@ void SystemLogManager::show_log() {
       logs[0].print();
     }
   }
-
+  // system_storage.traverse();
   std::cout << "-----------------------------------------------------------\n";
   std::cout << "一共" << system_log_count << "条日志\n";
   std::cout << "-----------------------------------------------------------\n";
