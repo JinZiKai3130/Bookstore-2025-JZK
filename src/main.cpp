@@ -16,6 +16,8 @@ int main()
     UserManager user_magr;
     BookManager book_magr;
     FinanceLogManager finance_magr;
+    EmployeeLogManager employee_magr;
+    SystemLogManager system_magr;
 
     string op, line;
     int tmp_cnt = 0;
@@ -43,10 +45,14 @@ int main()
                 iss >> id >> password;
                 // std::cout << id << " " << password << '\n';
                 user_magr.login(id.c_str(), password.c_str());
+                string log_msg = "su " + id;
+                system_magr.add_system_log(id.c_str(), log_msg.c_str());
             }
             else if (op == "logout")
             {
                 Users cur_user = user_magr.get_user();
+                string log_msg = "logout";
+                system_magr.add_system_log(cur_user.UserID, log_msg.c_str());
                 user_magr.logout();
             }
             else if (op == "register")
@@ -59,6 +65,8 @@ int main()
                     throw("Invalid\n");
                 }
                 user_magr.regist(id.c_str(), password.c_str(), username.c_str());
+                string log_msg = "register " + id;
+                system_magr.add_system_log(id.c_str(), log_msg.c_str());
             }
             else if (op == "passwd")
             {
@@ -91,6 +99,8 @@ int main()
                 }
                 // std::cout << "start pwd change" << std::endl;
                 user_magr.change_pwd(id.c_str(), new_pwd.c_str(), cur_user.privilege, cur_pwd.c_str());
+                string log_msg = "passwd " + id;
+                system_magr.add_system_log(cur_user.UserID, log_msg.c_str());
             }
             else if (op == "useradd")
             {
@@ -108,6 +118,9 @@ int main()
                     throw("Invalid\n");
                 }
                 user_magr.useradd(id.c_str(), pwd.c_str(), privilege, username.c_str(), cur_user.privilege, 0);
+                string log_msg = "useradd " + id + " privilege=" + std::to_string(privilege);
+                employee_magr.add_employee_log(cur_user.UserID, log_msg.c_str());
+                system_magr.add_system_log(cur_user.UserID, log_msg.c_str());
             }
             else if (op == "delete")
             {
@@ -119,6 +132,9 @@ int main()
                 string id;
                 iss >> id;
                 user_magr.delt(id.c_str());
+                string log_msg = "delete user " + id;
+                employee_magr.add_employee_log(cur_user.UserID, log_msg.c_str());
+                system_magr.add_system_log(cur_user.UserID, log_msg.c_str());
             }
             else if (op == "show")
             {
@@ -156,6 +172,8 @@ int main()
                         finance_magr.view_finance_record(0);
                     else
                         finance_magr.view_finance_record(std::stoi(oper_num));
+                    string log_msg = "show finance";
+                    system_magr.add_system_log(cur_user.UserID, log_msg.c_str());
                 }
                 else
                 {
@@ -178,7 +196,9 @@ int main()
                 book_magr.buy(isbn.c_str(), quantity);
                 vector<Book> cur_book = book_magr.f_by_isbn(isbn.c_str());
                 double tot_money = cur_book[0].price * static_cast<double>(std::stoi(quantity));
-                finance_magr.add_finance_record(tot_money, 0, isbn.c_str());
+                finance_magr.add_finance_record(tot_money, 0, isbn.c_str(), cur_user.UserID);
+                string log_msg = "buy " + isbn + " quantity=" + quantity;
+                system_magr.add_system_log(cur_user.UserID, log_msg.c_str());
             }
             else if (op == "select")
             {
@@ -186,7 +206,7 @@ int main()
                 if (cur_user.privilege < 3)
                 {
                     throw("Invalid\n");
-                } // 新增
+                }
                 string isbn;
                 iss >> isbn;
                 if (!book_magr.check_isbn(isbn.c_str()))
@@ -202,6 +222,9 @@ int main()
                 string emptystring = "";
                 user_magr.select_book(isbn.c_str(), emptystring.c_str());
                 book_magr.select(isbn.c_str());
+                string log_msg = "select " + isbn;
+                employee_magr.add_employee_log(cur_user.UserID, log_msg.c_str());
+                system_magr.add_system_log(cur_user.UserID, log_msg.c_str());
             }
             else if (op == "modify")
             {
@@ -210,7 +233,7 @@ int main()
                 if (cur_user.privilege < 3)
                 {
                     throw("Invalid\n");
-                } // 新增
+                }
                 // std::cout << "getuser\n";
                 if (strlen(cur_user.selected_book) == 0)
                 {
@@ -223,6 +246,9 @@ int main()
                 book_magr.modify(line, tmp);
                 // std::cout << "modifyend\n";
                 user_magr.select_book(tmp.c_str(), origintmp.c_str());
+                string log_msg = "modify book " + origintmp + " " + line;
+                employee_magr.add_employee_log(cur_user.UserID, log_msg.c_str());
+                system_magr.add_system_log(cur_user.UserID, log_msg.c_str());
             }
             else if (op == "import")
             {
@@ -231,7 +257,7 @@ int main()
                 if (cur_user.privilege < 3)
                 {
                     throw("Invalid\n");
-                } // 建议新增
+                }
                 string number, tot_cost;
                 iss >> number >> tot_cost;
                 if (iss >> number)
@@ -245,18 +271,44 @@ int main()
                 {
                     throw("Invalid\n");
                 }
-                finance_magr.add_finance_record(tot_money, 1, cur_user.selected_book);
+                finance_magr.add_finance_record(tot_money, 1, cur_user.selected_book, cur_user.UserID);
+                string log_msg = "import " + string(cur_user.selected_book) + " quantity=" + number + " cost=" + tot_cost;
                 // std::cout << "end import\n";
+                employee_magr.add_employee_log(cur_user.UserID, log_msg.c_str());
+                system_magr.add_system_log(cur_user.UserID, log_msg.c_str());
+                
             }
-            // else if (op == "log")
-            // {
-            //     Users cur_user = user_magr.get_user();
-
-            // }
-            // else if (op == "report")
-            // {
-            //     Users cur_user = user_magr.get_user();
-            // }
+            else if (op == "log")
+            {
+                Users cur_user = user_magr.get_user();
+                if (cur_user.privilege != 7)
+                {
+                    throw("Invalid\n");
+                }
+                system_magr.show_log();
+            }
+            else if (op == "report")
+            {
+                Users cur_user = user_magr.get_user();
+                if (cur_user.privilege != 7)
+                {
+                    throw("Invalid\n");
+                }
+                string report_type;
+                iss >> report_type;
+                if (report_type == "finance")
+                {
+                    finance_magr.report_finance();
+                }
+                else if (report_type == "employee")
+                {
+                    employee_magr.report_employee();
+                }
+                else
+                {
+                    throw("Invalid\n");
+                }
+            }
             else
             {
                 throw("Invalid\n");
