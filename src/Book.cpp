@@ -426,7 +426,7 @@ void BookManager::modify(const string &str, string &selected_isbn) {
         new_element += parameter[i];
       }
       string new_isbn = new_element;
-      if (new_isbn == selected_isbn || !check_isbn(new_isbn)) {
+      if (new_isbn == selected_isbn || !check_isbn(new_isbn.c_str())) {
         throw("Invalid\n");
       }
       // std::cout << "before copy\n";
