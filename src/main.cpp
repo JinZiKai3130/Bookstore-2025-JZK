@@ -243,26 +243,26 @@ int main() {
         employee_magr.add_employee_log(cur_user.UserID, log_msg.c_str());
         system_magr.add_system_log(cur_user.UserID, log_msg.c_str());
 
-      } else if (op == "log") {
-        Users cur_user = user_magr.get_user();
-        if (cur_user.privilege != 7) {
-          throw("Invalid\n");
-        }
-        system_magr.show_log();
-      } else if (op == "report") {
-        Users cur_user = user_magr.get_user();
-        if (cur_user.privilege != 7) {
-          throw("Invalid\n");
-        }
-        string report_type;
-        iss >> report_type;
-        if (report_type == "finance") {
-          finance_magr.report_finance();
-        } else if (report_type == "employee") {
-          employee_magr.report_employee();
-        } else {
-          throw("Invalid\n");
-        }
+        //   } else if (op == "log") {
+        //     Users cur_user = user_magr.get_user();
+        //     if (cur_user.privilege != 7) {
+        //       throw("Invalid\n");
+        //     }
+        //     system_magr.show_log();
+        //   } else if (op == "report") {
+        //     Users cur_user = user_magr.get_user();
+        //     if (cur_user.privilege != 7) {
+        //       throw("Invalid\n");
+        //     }
+        //     string report_type;
+        //     iss >> report_type;
+        //     if (report_type == "finance") {
+        //       finance_magr.report_finance();
+        //     } else if (report_type == "employee") {
+        //       employee_magr.report_employee();
+        //     } else {
+        //       throw("Invalid\n");
+        //     }
       } else {
         throw("Invalid\n");
       }
