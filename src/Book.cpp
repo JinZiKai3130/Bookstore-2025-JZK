@@ -240,7 +240,7 @@ bool BookManager::check_quantity(const std::string &quantity) {
 
   try {
     long long val = std::stoll(quantity);
-    if (val > 2147483647LL)
+    if (val > 2147483647LL || val == 0LL)
       return false;
   } catch (...) {
     return false;
@@ -312,7 +312,7 @@ void BookManager::show(const string &str) {
     s += str[i];
   }
 
-  if (pos == 0 || pos + 1 == str.length()) {
+  if (pos == 1 || pos + 1 == str.length()) {
     throw("Invalid\n");
   }
   vector<Book> found_book;
