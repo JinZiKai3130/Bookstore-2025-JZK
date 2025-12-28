@@ -455,7 +455,6 @@ void BookManager::modify(const string &str, string &selected_isbn) {
       strncpy(selected_book.ISBN, new_isbn.c_str(), 20);
       newed_isbn = new_isbn;
       vis[0] = true;
-      break;
     }
     if (s == "name") {
       if (vis[1]) {
