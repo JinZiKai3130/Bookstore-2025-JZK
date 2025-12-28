@@ -232,6 +232,11 @@ bool BookManager::check_quantity(const std::string &quantity) {
   size_t len = quantity.length();
   if (len == 0 || len > 10)
     return false;
+  // 前导0
+  if (len > 1 && quantity[0] == '0') {
+    return false;
+  }
+
   for (char c : quantity) {
     if (!std::isdigit(static_cast<unsigned char>(c))) {
       return false;
@@ -255,10 +260,12 @@ bool BookManager::check_price(const string &pric) {
     return false;
 
   int dot_count = 0;
+  size_t dot_pos = string::npos;
   for (size_t i = 0; i < len; ++i) {
     char c = pric[i];
     if (c == '.') {
       dot_count++;
+      dot_pos = i;
       if (dot_count > 1)
         return false;
     } else if (!std::isdigit(static_cast<unsigned char>(c))) {
@@ -268,6 +275,10 @@ bool BookManager::check_price(const string &pric) {
   if (pric[0] == '.' || pric[len - 1] == '.') {
     return false;
   }
+  size_t int_part_len = (dot_pos != string::npos) ? dot_pos : len;
+  if (int_part_len > 1 && pric[0] == '0') {
+    return false;
+  } // 前导0
 
   if (dot_count == 1) {
     size_t dot_pos = pric.find('.');

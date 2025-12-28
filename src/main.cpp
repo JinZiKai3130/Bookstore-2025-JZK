@@ -55,6 +55,9 @@ int main() {
         system_magr.add_system_log(id.c_str(), log_msg.c_str());
       } else if (op == "logout") {
         Users cur_user = user_magr.get_user();
+        if (cur_user.privilege < 1) {
+          throw("Invalid\n");
+        }
         string log_msg = "logout";
         system_magr.add_system_log(cur_user.UserID, log_msg.c_str());
         user_magr.logout();
@@ -72,6 +75,9 @@ int main() {
         system_magr.add_system_log(id.c_str(), log_msg.c_str());
       } else if (op == "passwd") {
         Users cur_user = user_magr.get_user();
+        if (cur_user.privilege < 1) {
+          throw("Invalid\n");
+        }
         string id, cur_pwd = "", new_pwd, username;
         string tmp;
         std::vector<std::string> words;
@@ -197,6 +203,9 @@ int main() {
         }
       } else if (op == "buy") {
         Users cur_user = user_magr.get_user(); // 无法get则说明未登录
+        if (cur_user.privilege < 1) {
+          throw("Invalid\n");
+        }
         string isbn, quantity;
         if (!(iss >> isbn >> quantity)) {
           throw("Invalid\n");
@@ -208,7 +217,21 @@ int main() {
         if (quantity.empty() || quantity.length() > 10) {
           throw("Invalid\n");
         }
-        if (quantity.length() > 10 || std::stoll(quantity) > 2147483647LL) {
+        // 检查前导零
+        if (quantity.length() > 1 && quantity[0] == '0') {
+          throw("Invalid\n");
+        }
+        for (char c : quantity) {
+          if (!std::isdigit(static_cast<unsigned char>(c))) {
+            throw("Invalid\n");
+          }
+        }
+        try {
+          long long val = std::stoll(quantity);
+          if (val > 2147483647LL) {
+            throw("Invalid\n");
+          }
+        } catch (...) {
           throw("Invalid\n");
         }
         book_magr.buy(isbn.c_str(), quantity);
