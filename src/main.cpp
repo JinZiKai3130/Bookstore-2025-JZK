@@ -45,7 +45,10 @@ int main() {
     try {
       if (op == "su") {
         string id, password = "";
-        iss >> id >> password;
+        if (!(iss >> id)) {
+          throw("Invalid\n");
+        }
+        iss >> password;
         // std::cout << id << " " << password << '\n';
         user_magr.login(id.c_str(), password.c_str());
         string log_msg = "su " + id;
@@ -57,9 +60,11 @@ int main() {
         user_magr.logout();
       } else if (op == "register") {
         string id, password, username;
-        iss >> id >> password >> username;
-        if (iss >> username) {
-          // std::cout << username << std::endl;
+        if (!(iss >> id >> password >> username)) {
+          throw("Invalid\n");
+        }
+        string extra;
+        if (iss >> extra) {
           throw("Invalid\n");
         }
         user_magr.regist(id.c_str(), password.c_str(), username.c_str());
@@ -97,11 +102,25 @@ int main() {
         if (cur_user.privilege < 3) {
           throw("Invalid\n");
         }
-        string id, pwd, username;
-        int privilege;
-        iss >> id >> pwd >> privilege >> username;
-        if (iss >> username) {
-          // std::cout << username << std::endl;
+        string id, pwd, username, priv_str;
+        if (!(iss >> id >> pwd >> priv_str >> username)) {
+          throw("Invalid\n");
+        }
+        string extra;
+        if (iss >> extra) {
+          throw("Invalid\n");
+        }
+        if (priv_str.empty() || priv_str.length() > 1) {
+          throw("Invalid\n");
+        }
+        for (char c : priv_str) {
+          if (!std::isdigit(static_cast<unsigned char>(c))) {
+            throw("Invalid\n");
+          }
+        }
+        int privilege = std::stoi(priv_str);
+        string extra;
+        if (iss >> extra) {
           throw("Invalid\n");
         }
         user_magr.useradd(id.c_str(), pwd.c_str(), privilege, username.c_str(),
@@ -116,7 +135,13 @@ int main() {
           throw("Invalid\n");
         }
         string id;
-        iss >> id;
+        if (!(iss >> id)) {
+          throw("Invalid\n");
+        }
+        string extra;
+        if (iss >> extra) {
+          throw("Invalid\n");
+        }
         user_magr.delt(id.c_str());
         string log_msg = "delete user " + id;
         employee_magr.add_employee_log(cur_user.UserID, log_msg.c_str());
@@ -142,10 +167,24 @@ int main() {
             if (count > 1) {
               throw("Invalid\n");
             }
+            if (oper_num.empty() || oper_num.length() > 10) {
+              throw("Invalid\n");
+            }
+            if (oper_num.length() > 1 && oper_num[0] == '0') {
+              throw("Invalid\n");
+            }
             for (char const &c : oper_num) {
               if (!std::isdigit(c)) {
                 throw("Invalid\n");
               }
+            }
+            try {
+              long long val = std::stoll(oper_num);
+              if (val > 2147483647LL) {
+                throw("Invalid\n");
+              }
+            } catch (...) {
+              throw("Invalid\n");
             }
           }
           if (oper_num.empty())
@@ -163,8 +202,14 @@ int main() {
       } else if (op == "buy") {
         Users cur_user = user_magr.get_user(); // 无法get则说明未登录
         string isbn, quantity;
-        iss >> isbn >> quantity;
-        if (iss >> isbn) {
+        if (!(iss >> isbn >> quantity)) {
+          throw("Invalid\n");
+        }
+        string extra;
+        if (iss >> extra) {
+          throw("Invalid\n");
+        }
+        if (quantity.empty() || quantity.length() > 10) {
           throw("Invalid\n");
         }
         if (quantity.length() > 10 || std::stoll(quantity) > 2147483647LL) {
@@ -229,8 +274,11 @@ int main() {
           throw("Invalid\n");
         }
         string number, tot_cost;
-        iss >> number >> tot_cost;
-        if (iss >> number) {
+        if (!(iss >> number >> tot_cost)) {
+          throw("Invalid\n");
+        }
+        string extra;
+        if (iss >> extra) {
           throw("Invalid\n");
         }
         if (!book_magr.check_price(tot_cost)) {

@@ -70,8 +70,6 @@ bool UserManager::check_name(const char *str)
         return false;
     while (*str != '\0')
     {
-        if (cnt > 30)
-            return false;
         if (static_cast<int>(*str) > 32 && static_cast<int>(*str) <= 126)
         {
             str++;
@@ -80,6 +78,8 @@ bool UserManager::check_name(const char *str)
         }
         return false;
     }
+    if (cnt > 30)
+        return false;
     return true;
 }
 

@@ -408,6 +408,12 @@ void BookManager::show(const string &str) {
 }
 
 void BookManager::modify(const string &str, string &selected_isbn) {
+  std::string tmpstr = str;
+  size_t start = tmpstr.find_first_not_of(' ');
+  if (start == std::string::npos) {
+    throw("Invalid\n");
+  }
+
   std::istringstream iss(str);
   std::string parameter;
   // 未选中放在外面判断
@@ -449,6 +455,10 @@ void BookManager::modify(const string &str, string &selected_isbn) {
       }
       string new_isbn = new_element;
       if (new_isbn == selected_isbn || !check_isbn(new_isbn.c_str())) {
+        throw("Invalid\n");
+      }
+      vector<Book> existing = f_by_isbn(new_isbn.c_str());
+      if (!existing.empty()) {
         throw("Invalid\n");
       }
       // std::cout << "before copy\n";
@@ -525,7 +535,7 @@ void BookManager::modify(const string &str, string &selected_isbn) {
     if (s == "price") {
       // std::cout << "changeprice\n";
       if (vis[4]) {
-        throw("Invalid");
+        throw("Invalid\n");
       }
       if (pos == parameter.length() - 1) {
         throw("Invalid\n");
