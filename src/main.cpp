@@ -22,7 +22,7 @@ int main() {
   int tmp_cnt = 0;
   while (getline(std::cin, line)) {
     tmp_cnt++;
-    if (line == "\n" || line.empty()) {
+    if (line.empty()) {
       continue;
     }
     bool invalid_char = false;
@@ -226,12 +226,15 @@ int main() {
         if (iss >> number) {
           throw("Invalid\n");
         }
-        book_magr.impt(number, cur_user);
-
-        double tot_money = std::stod(tot_cost);
-        if (tot_money == 0) {
+        if (!book_magr.check_price(tot_cost)) {
           throw("Invalid\n");
         }
+        double tot_money = std::stod(tot_cost);
+        if (tot_money <= 0) {
+          throw("Invalid\n");
+        }
+        book_magr.impt(number, cur_user);
+
         finance_magr.add_finance_record(tot_money, 1, cur_user.selected_book,
                                         cur_user.UserID);
         string log_msg = "import " + string(cur_user.selected_book) +
