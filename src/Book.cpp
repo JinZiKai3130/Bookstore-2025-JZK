@@ -315,7 +315,7 @@ void BookManager::show(const string &str) {
   if (pos == 0 || pos == 1 || pos + 1 == str.length()) {
     throw("Invalid\n");
   }
-  
+
   if (s != "ISBN" && s != "name" && s != "author" && s != "keyword") {
     throw("Invalid\n");
   }
@@ -340,7 +340,8 @@ void BookManager::show(const string &str) {
 
   if (s == "name") {
     string new_name = str.substr(pos + 1);
-    if (new_name.length() < 2 || new_name[0] != '\"' || new_name[new_name.length() - 1] != '\"') {
+    if (new_name.length() < 2 || new_name[0] != '\"' ||
+        new_name[new_name.length() - 1] != '\"') {
       throw("Invalid\n");
     }
     new_name.erase(new_name.size() - 1);
@@ -355,7 +356,8 @@ void BookManager::show(const string &str) {
   }
   if (s == "author") {
     string new_author = str.substr(pos + 1);
-    if (new_author.length() < 2 || new_author[0] != '\"' || new_author[new_author.length() - 1] != '\"') {
+    if (new_author.length() < 2 || new_author[0] != '\"' ||
+        new_author[new_author.length() - 1] != '\"') {
       throw("Invalid\n");
     }
     new_author.erase(new_author.size() - 1);
@@ -375,7 +377,8 @@ void BookManager::show(const string &str) {
       }
     }
     string new_kwd = str.substr(pos + 1);
-    if (new_kwd.length() < 2 || new_kwd[0] != '\"' || new_kwd[new_kwd.length() - 1] != '\"') {
+    if (new_kwd.length() < 2 || new_kwd[0] != '\"' ||
+        new_kwd[new_kwd.length() - 1] != '\"') {
       throw("Invalid\n");
     }
     new_kwd.erase(new_kwd.size() - 1);
@@ -469,6 +472,9 @@ void BookManager::modify(const string &str, string &selected_isbn) {
         new_element += parameter[i];
       }
       string new_name = new_element;
+      if (!check_name(new_name.c_str())) {
+        throw("Invalid\n");
+      }
       strncpy(selected_book.name, new_name.c_str(), 60);
 
       vis[1] = true;
@@ -488,6 +494,9 @@ void BookManager::modify(const string &str, string &selected_isbn) {
         new_element += parameter[i];
       }
       string new_author = new_element;
+      if (!check_name(new_author.c_str())) {
+        throw("Invalid\n");
+      }
       strncpy(selected_book.author, new_author.c_str(), 60);
 
       vis[2] = true;

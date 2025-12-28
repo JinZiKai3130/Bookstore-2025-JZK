@@ -167,6 +167,9 @@ int main() {
         if (iss >> isbn) {
           throw("Invalid\n");
         }
+        if (quantity.length() > 10 || std::stoll(quantity) > 2147483647LL) {
+          throw("Invalid\n");
+        }
         book_magr.buy(isbn.c_str(), quantity);
         vector<Book> cur_book = book_magr.f_by_isbn(isbn.c_str());
         double tot_money =
