@@ -312,7 +312,11 @@ void BookManager::show(const string &str) {
     s += str[i];
   }
 
-  if (pos == 1 || pos + 1 == str.length()) {
+  if (pos == 0 || pos == 1 || pos + 1 == str.length()) {
+    throw("Invalid\n");
+  }
+  
+  if (s != "ISBN" && s != "name" && s != "author" && s != "keyword") {
     throw("Invalid\n");
   }
   vector<Book> found_book;
@@ -321,7 +325,11 @@ void BookManager::show(const string &str) {
   vector<name_author_isbn> book_by_author;
   vector<string> isbn_of_book;
   if (s == "ISBN") {
-    found_book = f_by_isbn(str.substr(pos + 1).c_str());
+    string isbn_val = str.substr(pos + 1);
+    if (isbn_val.empty() || !check_isbn(isbn_val.c_str())) {
+      throw("Invalid\n");
+    }
+    found_book = f_by_isbn(isbn_val.c_str());
     if (found_book.empty()) {
       std::cout << '\n';
     } else {
@@ -332,11 +340,14 @@ void BookManager::show(const string &str) {
 
   if (s == "name") {
     string new_name = str.substr(pos + 1);
-    if (new_name[0] != '\"' || new_name[new_name.length() - 1] != '\"') {
+    if (new_name.length() < 2 || new_name[0] != '\"' || new_name[new_name.length() - 1] != '\"') {
       throw("Invalid\n");
     }
     new_name.erase(new_name.size() - 1);
     new_name.erase(new_name.begin());
+    if (new_name.empty() || !check_name(new_name.c_str())) {
+      throw("Invalid\n");
+    }
     book_by_name = f_by_name(new_name.c_str());
     for (const auto &tmp : book_by_name) {
       isbn_of_book.push_back(tmp.ISBN);
@@ -344,11 +355,14 @@ void BookManager::show(const string &str) {
   }
   if (s == "author") {
     string new_author = str.substr(pos + 1);
-    if (new_author[0] != '\"' || new_author[new_author.length() - 1] != '\"') {
+    if (new_author.length() < 2 || new_author[0] != '\"' || new_author[new_author.length() - 1] != '\"') {
       throw("Invalid\n");
     }
     new_author.erase(new_author.size() - 1);
     new_author.erase(new_author.begin());
+    if (new_author.empty() || !check_name(new_author.c_str())) {
+      throw("Invalid\n");
+    }
     book_by_author = f_by_author(new_author.c_str());
     for (const auto &tmp : book_by_author) {
       isbn_of_book.push_back(tmp.ISBN);
@@ -361,11 +375,14 @@ void BookManager::show(const string &str) {
       }
     }
     string new_kwd = str.substr(pos + 1);
-    if (new_kwd[0] != '\"' || new_kwd[new_kwd.length() - 1] != '\"') {
+    if (new_kwd.length() < 2 || new_kwd[0] != '\"' || new_kwd[new_kwd.length() - 1] != '\"') {
       throw("Invalid\n");
     }
     new_kwd.erase(new_kwd.size() - 1);
     new_kwd.erase(new_kwd.begin());
+    if (new_kwd.empty() || !check_name(new_kwd.c_str())) {
+      throw("Invalid\n");
+    }
     book_by_keywords = f_by_keyword(new_kwd.c_str());
 
     for (const auto &tmp : book_by_keywords) {

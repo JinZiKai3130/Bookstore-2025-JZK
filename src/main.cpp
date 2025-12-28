@@ -126,12 +126,10 @@ int main() {
           throw("Invalid\n");
         }
         string tmp = "";
-        int cnt = 0;
-        if (line.empty()) {
+        if (!(iss >> tmp)) {
           book_magr.show("");
           continue;
         }
-        iss >> tmp;
         if (tmp == "finance") {
           if (cur_user.privilege < 7) {
             throw("Invalid\n");
