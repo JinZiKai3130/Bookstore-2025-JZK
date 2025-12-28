@@ -380,7 +380,9 @@ void BookManager::show(const string &str) {
     }
     new_kwd.erase(new_kwd.size() - 1);
     new_kwd.erase(new_kwd.begin());
-    if (new_kwd.empty() || !check_name(new_kwd.c_str())) {
+    try {
+      parse_keywords(new_kwd);
+    } catch (...) {
       throw("Invalid\n");
     }
     book_by_keywords = f_by_keyword(new_kwd.c_str());

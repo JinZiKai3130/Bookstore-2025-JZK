@@ -274,10 +274,8 @@ int main() {
       // std::cout << "Line" << tmp_cnt << std::endl;
       std::cout << e;
     } catch (const std::exception &e) {
-      // 捕获 std::stoi, std::stod 等抛出的异常
       std::cout << "Invalid\n";
     } catch (...) {
-      // 捕获所有其他异常
       std::cout << "Invalid\n";
     }
   }
