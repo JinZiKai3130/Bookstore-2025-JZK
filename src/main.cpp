@@ -4,6 +4,7 @@
 #include "Log.hpp"
 #include "User.hpp"
 #include <cstring>
+#include <exception>
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -135,7 +136,12 @@ int main() {
             throw("Invalid\n");
           }
           string oper_num;
+          int count = 0;
           while (iss >> oper_num) {
+            count++;
+            if (count > 1) {
+              throw("Invalid\n");
+            }
             for (char const &c : oper_num) {
               if (!std::isdigit(c)) {
                 throw("Invalid\n");
@@ -267,6 +273,12 @@ int main() {
     } catch (const char *e) {
       // std::cout << "Line" << tmp_cnt << std::endl;
       std::cout << e;
+    } catch (const std::exception &e) {
+      // 捕获 std::stoi, std::stod 等抛出的异常
+      std::cout << "Invalid\n";
+    } catch (...) {
+      // 捕获所有其他异常
+      std::cout << "Invalid\n";
     }
   }
   return 0;
