@@ -119,10 +119,6 @@ int main() {
           }
         }
         int privilege = std::stoi(priv_str);
-        string extra;
-        if (iss >> extra) {
-          throw("Invalid\n");
-        }
         user_magr.useradd(id.c_str(), pwd.c_str(), privilege, username.c_str(),
                           cur_user.privilege, 0);
         string log_msg =
