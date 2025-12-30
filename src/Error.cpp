@@ -1,8 +1,7 @@
-#include "Error.hpp"
+#include "../include/Error.hpp"
 
 #include <utility>
 
-BasicError::BasicError(std::string&& message)
-    : std::runtime_error(message), message_(std::move(message)) {}
+InvalidOperation::InvalidOperation() : message_("Invalid") {}
 
-const std::string& BasicError::message() const noexcept { return message_; }
+const char *InvalidOperation::what() const noexcept { return message_.c_str(); }

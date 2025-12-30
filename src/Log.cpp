@@ -1,4 +1,5 @@
-#include "Log.hpp"
+#include "../include/Log.hpp"
+#include "../include/Error.hpp"
 #include <iomanip>
 
 FinanceLogManager::FinanceLogManager()
@@ -84,7 +85,7 @@ void FinanceLogManager::view_finance_record(const int &number) {
   if (number_ == 0)
     number_ = finance_total_count;
   if (number_ > finance_total_count) {
-    throw("Invalid\n");
+    throw InvalidOperation();
   }
   std::vector<FinanceLog> taillog =
       finance_storage.search_data(std::to_string(finance_total_count));

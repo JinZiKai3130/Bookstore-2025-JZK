@@ -3,3 +3,23 @@ build/
 .vscode/
 .cache/
 .DS_Store
+
+*.o
+*.obj
+*.dll
+*.so
+*.a
+*.lib
+*.dylib
+
+# 可执行文件
+*.exe
+*.out
+*.app
+*.bin
+
+# 构建目录
+build/
+Debug/
+Release/
+dist/

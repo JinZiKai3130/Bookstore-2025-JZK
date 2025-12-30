@@ -1,8 +1,8 @@
-#include "BlockStorage.hpp"
-#include "Book.hpp"
-#include "Error.hpp"
-#include "Log.hpp"
-#include "User.hpp"
+#include "../include/BlockStorage.hpp"
+#include "../include/Book.hpp"
+#include "../include/Error.hpp"
+#include "../include/Log.hpp"
+#include "../include/User.hpp"
 #include <cstring>
 #include <exception>
 #include <iostream>
@@ -46,7 +46,7 @@ int main() {
       if (op == "su") {
         string id, password = "";
         if (!(iss >> id)) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         iss >> password;
         // std::cout << id << " " << password << '\n';
@@ -56,7 +56,7 @@ int main() {
       } else if (op == "logout") {
         Users cur_user = user_magr.get_user();
         if (cur_user.privilege < 1) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         string log_msg = "logout";
         system_magr.add_system_log(cur_user.UserID, log_msg.c_str());
@@ -64,11 +64,11 @@ int main() {
       } else if (op == "register") {
         string id, password, username;
         if (!(iss >> id >> password >> username)) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         string extra;
         if (iss >> extra) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         user_magr.regist(id.c_str(), password.c_str(), username.c_str());
         string log_msg = "register " + id;
@@ -76,7 +76,7 @@ int main() {
       } else if (op == "passwd") {
         Users cur_user = user_magr.get_user();
         if (cur_user.privilege < 1) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         string id, cur_pwd = "", new_pwd, username;
         string tmp;
@@ -85,11 +85,11 @@ int main() {
           words.push_back(tmp);
         }
         if (words.size() < 2 || words.size() > 3) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         if (words.size() == 2) {
           if (cur_user.privilege != 7) {
-            throw("Invalid\n");
+            throw InvalidOperation();
           }
           id = words[0];
           new_pwd = words[1];
@@ -106,22 +106,22 @@ int main() {
       } else if (op == "useradd") {
         Users cur_user = user_magr.get_user();
         if (cur_user.privilege < 3) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         string id, pwd, username, priv_str;
         if (!(iss >> id >> pwd >> priv_str >> username)) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         string extra;
         if (iss >> extra) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         if (priv_str.empty() || priv_str.length() > 1) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         for (char c : priv_str) {
           if (!std::isdigit(static_cast<unsigned char>(c))) {
-            throw("Invalid\n");
+            throw InvalidOperation();
           }
         }
         int privilege = std::stoi(priv_str);
@@ -134,15 +134,15 @@ int main() {
       } else if (op == "delete") {
         Users cur_user = user_magr.get_user();
         if (cur_user.privilege != 7) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         string id;
         if (!(iss >> id)) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         string extra;
         if (iss >> extra) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         user_magr.delt(id.c_str());
         string log_msg = "delete user " + id;
@@ -151,7 +151,7 @@ int main() {
       } else if (op == "show") {
         Users cur_user = user_magr.get_user();
         if (cur_user.privilege < 1) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         string tmp = "";
         if (!(iss >> tmp)) {
@@ -160,33 +160,33 @@ int main() {
         }
         if (tmp == "finance") {
           if (cur_user.privilege < 7) {
-            throw("Invalid\n");
+            throw InvalidOperation();
           }
           string oper_num;
           int count = 0;
           while (iss >> oper_num) {
             count++;
             if (count > 1) {
-              throw("Invalid\n");
+              throw InvalidOperation();
             }
             if (oper_num.empty() || oper_num.length() > 10) {
-              throw("Invalid\n");
+              throw InvalidOperation();
             }
             if (oper_num.length() > 1 && oper_num[0] == '0') {
-              throw("Invalid\n");
+              throw InvalidOperation();
             }
             for (char const &c : oper_num) {
               if (!std::isdigit(c)) {
-                throw("Invalid\n");
+                throw InvalidOperation();
               }
             }
             try {
               long long val = std::stoll(oper_num);
               if (val > 2147483647LL) {
-                throw("Invalid\n");
+                throw InvalidOperation();
               }
             } catch (...) {
-              throw("Invalid\n");
+              throw InvalidOperation();
             }
           }
           if (oper_num.empty())
@@ -197,42 +197,42 @@ int main() {
           system_magr.add_system_log(cur_user.UserID, log_msg.c_str());
         } else {
           if (iss >> tmp) {
-            throw("Invalid\n");
+            throw InvalidOperation();
           }
           book_magr.show(tmp);
         }
       } else if (op == "buy") {
         Users cur_user = user_magr.get_user(); // 无法get则说明未登录
         if (cur_user.privilege < 1) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         string isbn, quantity;
         if (!(iss >> isbn >> quantity)) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         string extra;
         if (iss >> extra) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         if (quantity.empty() || quantity.length() > 10) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         // 检查前导零
         if (quantity.length() > 1 && quantity[0] == '0') {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         for (char c : quantity) {
           if (!std::isdigit(static_cast<unsigned char>(c))) {
-            throw("Invalid\n");
+            throw InvalidOperation();
           }
         }
         try {
           long long val = std::stoll(quantity);
           if (val > 2147483647LL) {
-            throw("Invalid\n");
+            throw InvalidOperation();
           }
         } catch (...) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         book_magr.buy(isbn.c_str(), quantity);
         vector<Book> cur_book = book_magr.f_by_isbn(isbn.c_str());
@@ -245,17 +245,17 @@ int main() {
       } else if (op == "select") {
         Users cur_user = user_magr.get_user();
         if (cur_user.privilege < 3) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         string isbn;
         iss >> isbn;
         if (!book_magr.check_isbn(isbn.c_str())) {
           // std::cout << "Invalid1\n";
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         if (iss >> isbn) {
           // std::cout << "Invalid2\n";
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         string emptystring = "";
         user_magr.select_book(isbn.c_str(), emptystring.c_str());
@@ -267,12 +267,12 @@ int main() {
         // std::cout << "this modify\n";
         Users cur_user = user_magr.get_user();
         if (cur_user.privilege < 3) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         // std::cout << "getuser\n";
         if (strlen(cur_user.selected_book) == 0) {
           //   std::cout << "no select book\n";
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         string tmp = cur_user.selected_book;
         string origintmp = tmp;
@@ -290,22 +290,22 @@ int main() {
         // std::cout << "start import\n";
         Users cur_user = user_magr.get_user();
         if (cur_user.privilege < 3) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         string number, tot_cost;
         if (!(iss >> number >> tot_cost)) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         string extra;
         if (iss >> extra) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         if (!book_magr.check_price(tot_cost)) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         double tot_money = std::stod(tot_cost);
         if (tot_money <= 0) {
-          throw("Invalid\n");
+          throw InvalidOperation();
         }
         book_magr.impt(number, cur_user);
 
@@ -317,32 +317,32 @@ int main() {
         employee_magr.add_employee_log(cur_user.UserID, log_msg.c_str());
         system_magr.add_system_log(cur_user.UserID, log_msg.c_str());
 
-        //   } else if (op == "log") {
-        //     Users cur_user = user_magr.get_user();
-        //     if (cur_user.privilege != 7) {
-        //       throw("Invalid\n");
-        //     }
-        //     system_magr.show_log();
-        //   } else if (op == "report") {
-        //     Users cur_user = user_magr.get_user();
-        //     if (cur_user.privilege != 7) {
-        //       throw("Invalid\n");
-        //     }
-        //     string report_type;
-        //     iss >> report_type;
-        //     if (report_type == "finance") {
-        //       finance_magr.report_finance();
-        //     } else if (report_type == "employee") {
-        //       employee_magr.report_employee();
-        //     } else {
-        //       throw("Invalid\n");
-        //     }
+      } else if (op == "log") {
+        Users cur_user = user_magr.get_user();
+        if (cur_user.privilege != 7) {
+          throw InvalidOperation();
+        }
+        system_magr.show_log();
+      } else if (op == "report") {
+        Users cur_user = user_magr.get_user();
+        if (cur_user.privilege != 7) {
+          throw InvalidOperation();
+        }
+        string report_type;
+        iss >> report_type;
+        if (report_type == "finance") {
+          finance_magr.report_finance();
+        } else if (report_type == "employee") {
+          employee_magr.report_employee();
+        } else {
+          throw InvalidOperation();
+        }
       } else {
-        throw("Invalid\n");
+        throw InvalidOperation();
       }
-    } catch (const char *e) {
+    } catch (InvalidOperation &e) {
       // std::cout << "Line" << tmp_cnt << std::endl;
-      std::cout << e;
+      std::cout << e.what() << '\n';
     } catch (const std::exception &e) {
       std::cout << "Invalid\n";
     } catch (...) {

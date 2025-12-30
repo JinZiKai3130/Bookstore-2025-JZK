@@ -1,14 +1,14 @@
 #pragma once
 
-#include <stdexcept>
+#include <exception>
 #include <string>
 
-class BasicError : public std::runtime_error {
- public:
-  explicit BasicError(std::string&& message);
+class InvalidOperation : public std::exception {
+public:
+  explicit InvalidOperation();
 
-  const std::string& message() const noexcept;
+  const char *what() const noexcept override;
 
- private:
+private:
   std::string message_;
 };
