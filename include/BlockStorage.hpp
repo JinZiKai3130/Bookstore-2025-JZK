@@ -11,7 +11,7 @@ using std::ifstream;
 using std::ofstream;
 using std::string;
 using std::vector;
-const int max_block_size = 1024;
+const int max_block_size = 50;
 
 template <typename T> struct Entry {
   char index[65];
