@@ -211,7 +211,11 @@ public:
   std::vector<T> search_data(const std::string &index) {
     std::vector<T> results;
     int pos = 0;
+    bool flag = false;
     while (pos != -1) {
+      if (flag) {
+        break;
+      }
       Blockhead<T> block_head;
       readBlockhead(pos, block_head);
       if (block_head.count > 0 &&
@@ -224,8 +228,10 @@ public:
       for (int i = 0; i < cur_block.count; i++) {
         if (strcmp(cur_block.entries[i].index, index.c_str()) == 0) {
           results.push_back(cur_block.entries[i].value);
-        } else if (strcmp(cur_block.entries[i].index, index.c_str()) > 0)
+        } else if (strcmp(cur_block.entries[i].index, index.c_str()) > 0) {
+          flag = true;
           break;
+        }
       }
       pos = cur_block.next_block;
     }
